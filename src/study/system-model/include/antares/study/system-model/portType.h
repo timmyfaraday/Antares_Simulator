@@ -21,6 +21,7 @@
 #pragma once
 
 #include <algorithm>
+#include <optional>
 #include <ranges>
 #include <string>
 #include <vector>

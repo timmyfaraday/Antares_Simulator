@@ -21,6 +21,7 @@
 #pragma once
 
 #include <map>
+#include <optional>
 
 #include <antares/expressions/nodes/PortFieldNode.h>
 #include <antares/expressions/visitors/EvaluationContext.h>
