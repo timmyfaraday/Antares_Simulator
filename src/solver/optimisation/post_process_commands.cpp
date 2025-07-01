@@ -214,7 +214,6 @@ void DTGnettingAfterCSRcmd::execute(const optRuntimeData&)
 // -----------------------------
 //  Interpolate Water Values
 // -----------------------------
-
 InterpolateWaterValuePostProcessCmd::InterpolateWaterValuePostProcessCmd(
   PROBLEME_HEBDO* problemeHebdo,
   AreaList& areas,
@@ -234,7 +233,6 @@ void InterpolateWaterValuePostProcessCmd::execute(const optRuntimeData& opt_runt
 // -----------------------------
 //  Hydro Levels Final Update
 // -----------------------------
-// HydroLevelsFinalUpdatePostProcessCmd
 HydroLevelsFinalUpdatePostProcessCmd::HydroLevelsFinalUpdatePostProcessCmd(
   PROBLEME_HEBDO* problemeHebdo,
   AreaList& areas):
