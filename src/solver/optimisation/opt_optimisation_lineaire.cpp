@@ -19,6 +19,8 @@
  * along with Antares_Simulator. If not, see <https://opensource.org/license/mpl-2-0/>.
  */
 
+#include <mutex>
+
 #include <antares/logs/logs.h>
 #include "antares/solver/optimisation/LinearProblemMatrix.h"
 #include "antares/solver/optimisation/constraints/constraint_builder_utils.h"
@@ -31,6 +33,8 @@
 
 using namespace Antares::Solver;
 using Antares::Solver::Optimization::OptimizationOptions;
+
+std::once_flag export_once;
 
 namespace
 {
@@ -259,9 +263,11 @@ bool OPT_OptimisationLineaire(const OptimizationOptions& options,
     resizeProbleme(problemeHebdo->ProblemeAResoudre.get(),
                    problemeHebdo->ProblemeAResoudre->NombreDeVariables,
                    problemeHebdo->ProblemeAResoudre->NombreDeContraintes);
-    if (problemeHebdo->ExportStructure && problemeHebdo->firstWeekOfSimulation)
+    if (problemeHebdo->ExportStructure)
     {
-        OPT_ExportStructures(problemeHebdo, writer);
+        std::call_once(export_once,
+                       [&problemeHebdo, &writer]()
+                       { OPT_ExportStructures(problemeHebdo, writer); });
     }
 
     bool ret = runWeeklyOptimization(options.firstOptimOptions,
