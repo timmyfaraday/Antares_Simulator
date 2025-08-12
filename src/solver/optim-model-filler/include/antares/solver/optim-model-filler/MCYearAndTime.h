@@ -21,36 +21,37 @@
  */
 
 #pragma once
+#include <fmt/format.h>
 
-#include <string>
-
-#include <antares/optimisation/linear-problem-api/IScenario.h>
-
-namespace Antares::Optimisation::LinearProblemDataImpl
+namespace Antares::Optimization
 {
-
-class IDataSeries
+/**
+ * Association of a Scenario (year) and time step
+ */
+struct MCYearAndTime
 {
-public:
-    virtual ~IDataSeries() = default;
-
-    explicit IDataSeries(std::string name):
-        name_(std::move(name))
+    enum class MCYear : unsigned int
     {
-    }
-
-    [[nodiscard]] virtual double getData(
-      LinearProblemApi::IScenario::TimeSeriesNumber time_series_number,
-      unsigned int hour) const
-      = 0;
-
-    [[nodiscard]] std::string name() const
-    {
-        return name_;
-    }
-
-private:
-    std::string name_;
+    };
+    MCYear mcYear;
+    unsigned int timestep;
 };
 
-} // namespace Antares::Optimisation::LinearProblemDataImpl
+inline auto format_as(const MCYearAndTime::MCYear& mcyear)
+{
+    return fmt::underlying(mcyear);
+}
+
+inline std::ostream& operator<<(std::ostream& os, const MCYearAndTime::MCYear& mcYear)
+{
+    os << static_cast<unsigned int>(mcYear);
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const MCYearAndTime& st)
+{
+    os << fmt::format("{{scenario: {}, timestep: {}}}", st.mcYear, st.timestep);
+    return os;
+}
+
+} // namespace Antares::Optimization

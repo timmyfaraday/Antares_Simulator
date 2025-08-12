@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2024, RTE (https://www.rte-france.com)
+ * Copyright 2007-2025, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -26,6 +26,7 @@
 #include <antares/expressions/visitors/NodeVisitor.h>
 #include <antares/optimisation/linear-problem-api/ILinearProblemData.h>
 #include <antares/solver/optim-model-filler/ReadLinearExpressionVisitor.h>
+#include "antares/optimisation/linear-problem-api/IScenario.h"
 #include "antares/study/system-model/component.h"
 using namespace Antares::Expressions::Nodes;
 using namespace Antares::Expressions::Visitors;
@@ -33,7 +34,6 @@ using namespace Antares::ModelerStudy;
 
 namespace Antares::Optimization
 {
-
 ReadLinearExpressionVisitor::ReadLinearExpressionVisitor(
   EvaluationContext evalContext,
   Optimisation::LinearProblemApi::FillContext fillContext,
@@ -104,7 +104,11 @@ TimeDependentLinearExpression ReadLinearExpressionVisitor::visit(const VariableN
     {
         return TimeDependentLinearExpression(
           fillContext_,
-          LinearExpression(0, {{FullKey(component_.Id(), node->value()), 1}}));
+          LinearExpression(0,
+                           {{FullKey(component_.Id(),
+                                     node->value(),
+                                     MCYearAndTime::MCYear{fillContext_.getYear()}),
+                             1}}));
     }
     // only dependent
     LinearExpressionMap linearExpressions;
@@ -113,9 +117,13 @@ TimeDependentLinearExpression ReadLinearExpressionVisitor::visit(const VariableN
          timeStep <= fillContext_.getLastTimeStep();
          ++timeStep)
     {
-        linearExpressions[timeStep] = LinearExpression(
-          0,
-          {{FullKey(component_.Id(), node->value(), 0 /*TODO */, timeStep), 1}});
+        linearExpressions[timeStep] = LinearExpression(0,
+                                                       {{FullKey(component_.Id(),
+                                                                 node->value(),
+                                                                 MCYearAndTime::MCYear{
+                                                                   fillContext_.getYear()},
+                                                                 timeStep),
+                                                         1}});
     }
     return TimeDependentLinearExpression(linearExpressions);
 }
@@ -143,9 +151,11 @@ TimeDependentLinearExpression ReadLinearExpressionVisitor::visit(const Parameter
          timeStep <= fillContext_.getLastTimeStep();
          ++timeStep)
     {
-        linearExpressions[timeStep] = LinearExpression(
-          evalContext_.getParameterValue(node->value(), "", 0, timeStep),
-          {});
+        // TODO: pass year
+        linearExpressions[timeStep] = LinearExpression(evalContext_.getParameterValue(node->value(),
+                                                                                      0,
+                                                                                      timeStep),
+                                                       {});
     }
     return TimeDependentLinearExpression(linearExpressions);
 }
@@ -162,8 +172,8 @@ TimeDependentLinearExpression ReadLinearExpressionVisitor::visit(const PortField
 
 TimeDependentLinearExpression ReadLinearExpressionVisitor::visit(const PortFieldSumNode* node)
 {
-    std::string portId = node->getPortName();
-    std::string fieldId = node->getFieldName();
+    auto& portId = node->getPortName();
+    auto& fieldId = node->getFieldName();
 
     TimeDependentLinearExpression to_return(fillContext_);
     for (const auto connexion_end: component_.componentConnectionsViaPort(portId))
@@ -173,7 +183,8 @@ TimeDependentLinearExpression ReadLinearExpressionVisitor::visit(const PortField
 
         const EvaluationContext connectedComponentEvalContext(component->getParameterValues(),
                                                               {},
-                                                              evalContext_.data());
+                                                              evalContext_.data(),
+                                                              evalContext_.scenario());
         ReadLinearExpressionVisitor visitor(connectedComponentEvalContext,
                                             fillContext_,
                                             *component);

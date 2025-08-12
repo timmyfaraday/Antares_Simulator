@@ -85,10 +85,15 @@ struct SimplexResult
     double objectiveValue;
 };
 
-static void fillModelerComponents(std::vector<std::unique_ptr<ComponentFiller>>& componentFillers,
-                                  std::vector<LinearProblemFiller*>& fillersCollection,
-                                  const ModelerStudy::SystemModel::System* modelerSystem,
-                                  VariableDictionary& variableDictionary)
+class EmptyScenarioGroupRepository: public Optimisation::ScenarioGroupRepository
+{
+};
+
+static void fillModelerComponents(
+  std::vector<std::unique_ptr<Optimisation::ComponentFiller>>& componentFillers,
+  std::vector<LinearProblemFiller*>& fillersCollection,
+  const ModelerStudy::SystemModel::System* modelerSystem,
+  VariableDictionary& variableDictionary)
 {
     if (!modelerSystem)
     {
@@ -96,10 +101,14 @@ static void fillModelerComponents(std::vector<std::unique_ptr<ComponentFiller>>&
         return;
     }
 
+    static const EmptyScenarioGroupRepository emptyScenarioGroupRepository;
     for (const auto& [_, component]: modelerSystem->Components())
     {
         componentFillers.push_back(
-          std::make_unique<ComponentFiller>(component, variableDictionary));
+          std::make_unique<Optimisation::ComponentFiller>(component,
+                                                          variableDictionary,
+                                                          emptyScenarioGroupRepository));
+        // TODO: use scenario group repository
     }
     for (auto& component_filler: componentFillers)
     {
@@ -151,7 +160,7 @@ FillContext buildFillContext(const PROBLEME_HEBDO* problemeHebdo, int NumInterva
                         * nTsInDay;
         lastTimestep = firstTimestep + nTsInDay - 1;
     }
-    return {firstTimestep, lastTimestep};
+    return {firstTimestep, lastTimestep, problemeHebdo->year}; // TODO: handle scenarios/year
 }
 
 // Returns a non-owning pointer
@@ -165,7 +174,7 @@ MPSolver* convertToMPSolver(const PROBLEME_HEBDO* problemeHebdo,
     LegacyFiller legacyOrtoolsFiller(problemeHebdo, namedProblems);
     std::vector<LinearProblemFiller*> fillersCollection = {&legacyOrtoolsFiller};
 
-    std::vector<std::unique_ptr<ComponentFiller>> componentFillers;
+    std::vector<std::unique_ptr<Optimisation::ComponentFiller>> componentFillers;
     VariableDictionary variableDictionary;
     ComponentToAreaConnectionFiller componentToAreaConnectionFiller(problemeHebdo,
                                                                     variableDictionary);
@@ -306,7 +315,6 @@ bool OPT_AppelDuSimplexe(const SingleOptimOptions& options,
                 *pt = ProblemeAResoudre->CoutsReduits[i];
             }
         }
-
         {
             const int opt = optimizationNumber - 1;
             assert(opt >= 0 && opt < 2);
@@ -333,7 +341,6 @@ bool OPT_AppelDuSimplexe(const SingleOptimOptions& options,
             }
         }
     }
-
     else
     {
         std::unique_ptr<MPSolver> MPproblem(

@@ -23,6 +23,7 @@
 #include <functional>
 #include <map>
 #include <ranges>
+#include <utility>
 
 #include <antares/solver/optim-model-filler/TimeDependentLinearExpression.h>
 #include "antares/expressions/RotateIndex.h"
@@ -143,9 +144,8 @@ size_t TimeDependentLinearExpression::getSize() const
 TimeDependentLinearExpression TimeDependentLinearExpression::shiftLinearExpressions(
   int shiftValue) const
 {
-    const Optimisation::LinearProblemApi::FillContext fillContext{
-      linearExpressions_.begin()->first,
-      linearExpressions_.rbegin()->first};
+    const Optimisation::LinearProblemApi::FillContext
+      fillContext{linearExpressions_.begin()->first, linearExpressions_.rbegin()->first, 0};
 
     LinearExpressionMap linearExpressions;
     for (const auto& timeStep: linearExpressions_ | std::views::keys)
@@ -159,18 +159,16 @@ TimeDependentLinearExpression TimeDependentLinearExpression::shiftLinearExpressi
 
 TimeDependentLinearExpression TimeDependentLinearExpression::operator[](int timeStep) const
 {
-    const Optimisation::LinearProblemApi::FillContext fillContext{
-      linearExpressions_.begin()->first,
-      linearExpressions_.rbegin()->first};
+    const Optimisation::LinearProblemApi::FillContext
+      fillContext{linearExpressions_.begin()->first, linearExpressions_.rbegin()->first, 0};
     return TimeDependentLinearExpression(fillContext, linearExpressions_.at(timeStep));
 }
 
 TimeDependentLinearExpression TimeDependentLinearExpression::timeSumLinearExpressions(int from,
                                                                                       int to) const
 {
-    const Optimisation::LinearProblemApi::FillContext fillContext{
-      linearExpressions_.begin()->first,
-      linearExpressions_.rbegin()->first};
+    const Optimisation::LinearProblemApi::FillContext
+      fillContext{linearExpressions_.begin()->first, linearExpressions_.rbegin()->first, 0};
     TimeDependentLinearExpression ret(fillContext);
 
     for (auto shift = from; shift <= to; ++shift)
@@ -182,10 +180,8 @@ TimeDependentLinearExpression TimeDependentLinearExpression::timeSumLinearExpres
 
 TimeDependentLinearExpression TimeDependentLinearExpression::allTimeSumLinearExpressions() const
 {
-    const Optimisation::LinearProblemApi::FillContext fillContext{
-      linearExpressions_.begin()->first,
-      linearExpressions_.rbegin()->first};
-
+    const Optimisation::LinearProblemApi::FillContext
+      fillContext{linearExpressions_.begin()->first, linearExpressions_.rbegin()->first, 0};
     LinearExpression sum;
     for (const auto& expr: linearExpressions_ | std::views::values)
     {
