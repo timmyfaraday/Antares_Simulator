@@ -28,6 +28,23 @@
 
 #include <antares/study/system-model/model.h>
 
+namespace
+{
+template<class OutT, class InT>
+void fillMapFrom(OutT& out, InT&& in)
+{
+    using InnerT = std::remove_cvref_t<InT>::value_type;
+    std::transform(in.begin(),
+                   in.end(),
+                   std::inserter(out, out.end()),
+                   [](/*Non const to prevent copy*/ InnerT& x)
+                   {
+                       std::string id = x.Id();
+                       return std::make_pair(std::move(id), std::move(x));
+                   });
+}
+} // namespace
+
 namespace Antares::ModelerStudy::SystemModel
 {
 std::size_t PortFieldKeyHash::operator()(const PortFieldKey& input) const
@@ -84,14 +101,7 @@ ModelBuilder& ModelBuilder::withObjective(Expression&& objective)
  */
 ModelBuilder& ModelBuilder::withParameters(std::vector<Parameter>&& parameters)
 {
-    std::transform(parameters.begin(),
-                   parameters.end(),
-                   std::inserter(model_.parameters_, model_.parameters_.end()),
-                   [](/*Non const to prevent copy*/ Parameter& parameter)
-                   {
-                       auto id = parameter.Id();
-                       return std::make_pair(id, std::move(parameter));
-                   });
+    fillMapFrom(model_.parameters_, parameters);
     return *this;
 }
 
@@ -105,13 +115,7 @@ ModelBuilder& ModelBuilder::withParameters(std::vector<Parameter>&& parameters)
  */
 ModelBuilder& ModelBuilder::withVariables(std::vector<Variable>&& variables)
 {
-    std::ranges::transform(variables,
-                           std::inserter(model_.variables_, model_.variables_.end()),
-                           [](/*Non const to prevent copy*/ Variable& variable)
-                           {
-                               auto id = variable.Id();
-                               return std::make_pair(id, std::move(variable));
-                           });
+    fillMapFrom(model_.variables_, variables);
     return *this;
 }
 
@@ -125,14 +129,7 @@ ModelBuilder& ModelBuilder::withVariables(std::vector<Variable>&& variables)
  */
 ModelBuilder& ModelBuilder::withPorts(std::vector<Port>&& ports)
 {
-    std::transform(ports.begin(),
-                   ports.end(),
-                   std::inserter(model_.ports_, model_.ports_.end()),
-                   [](/*Non const to prevent copy*/ Port& port)
-                   {
-                       auto id = port.Id();
-                       return std::make_pair(id, std::move(port));
-                   });
+    fillMapFrom(model_.ports_, ports);
     return *this;
 }
 
@@ -146,14 +143,7 @@ ModelBuilder& ModelBuilder::withPorts(std::vector<Port>&& ports)
  */
 ModelBuilder& ModelBuilder::withConstraints(std::vector<Constraint>&& constraints)
 {
-    std::transform(constraints.begin(),
-                   constraints.end(),
-                   std::inserter(model_.constraints_, model_.constraints_.end()),
-                   [](/*Non const to prevent copy*/ Constraint& constraint)
-                   {
-                       auto id = constraint.Id();
-                       return std::make_pair(id, std::move(constraint));
-                   });
+    fillMapFrom(model_.constraints_, constraints);
     return *this;
 }
 
