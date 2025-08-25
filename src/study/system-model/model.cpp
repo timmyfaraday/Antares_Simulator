@@ -27,12 +27,18 @@
 #include <boost/container_hash/hash.hpp>
 
 #include <antares/study/system-model/model.h>
+#include "antares/exception/RuntimeError.hpp"
 
 namespace
 {
 template<class OutT, class InT>
-void fillMapFrom(OutT& out, InT&& in)
+void fillMapFrom(OutT& out, InT&& in, Antares::ModelerStudy::SystemModel::ModelBuilder& builder)
 {
+    for (const auto& x: in)
+    {
+        builder.checkThatIdIsNotUsed(x.Id());
+    }
+
     using InnerT = std::remove_cvref_t<InT>::value_type;
     std::transform(in.begin(),
                    in.end(),
@@ -55,6 +61,18 @@ std::size_t PortFieldKeyHash::operator()(const PortFieldKey& input) const
     return seed;
 }
 
+void ModelBuilder::checkThatIdIsNotUsed(const std::string& id)
+{
+    if (attribute_ids_.contains(id))
+    {
+        std::string modelId = model_.id_;
+        reset();
+        throw Error::RuntimeError("Model \"" + modelId + "\" contains multiple objects with ID \""
+                                  + id + "\".");
+    }
+    attribute_ids_.emplace(id);
+}
+
 /**
  * \brief Builds and returns the Model object.
  *
@@ -63,8 +81,14 @@ std::size_t PortFieldKeyHash::operator()(const PortFieldKey& input) const
 Model ModelBuilder::build()
 {
     Model model = std::move(model_);
-    model_ = Model(); // makes ModelBuilder re-usable
+    reset();
     return model;
+}
+
+void ModelBuilder::reset()
+{
+    model_ = Model(); // makes ModelBuilder re-usable
+    attribute_ids_.clear();
 }
 
 /**
@@ -97,11 +121,11 @@ ModelBuilder& ModelBuilder::withObjective(Expression&& objective)
  * \param parameters A vector of Parameter objects to set.
  * \return Reference to the ModelBuilder object.
  *
- * inputs it not garanteed to be valid after the call
+ * inputs are not guaranteed to be valid after the call
  */
 ModelBuilder& ModelBuilder::withParameters(std::vector<Parameter>&& parameters)
 {
-    fillMapFrom(model_.parameters_, parameters);
+    fillMapFrom(model_.parameters_, parameters, *this);
     return *this;
 }
 
@@ -111,11 +135,11 @@ ModelBuilder& ModelBuilder::withParameters(std::vector<Parameter>&& parameters)
  * \param variables A vector of Variable objects to set.
  * \return Reference to the ModelBuilder object.
  *
- * inputs it not garanteed to be valid after the call
+ * inputs are not guaranteed to be valid after the call
  */
 ModelBuilder& ModelBuilder::withVariables(std::vector<Variable>&& variables)
 {
-    fillMapFrom(model_.variables_, variables);
+    fillMapFrom(model_.variables_, variables, *this);
     return *this;
 }
 
@@ -125,35 +149,35 @@ ModelBuilder& ModelBuilder::withVariables(std::vector<Variable>&& variables)
  * \param ports A vector of Port objects to set.
  * \return Reference to the ModelBuilder object.
  *
- * inputs it not garanteed to be valid after the call
+ * inputs are not garanteed to be valid after the call
  */
 ModelBuilder& ModelBuilder::withPorts(std::vector<Port>&& ports)
 {
-    fillMapFrom(model_.ports_, ports);
+    fillMapFrom(model_.ports_, ports, *this);
     return *this;
 }
 
 /**
- * \brief Sets the ID of the library.
+ * \brief Sets the constraints of the model.
  *
- * \param id The ID to set.
- * \return Reference to the LibraryBuilder object.
+ * \param constraints A vector of Constraint objects to set.
+ * \return Reference to the ModelBuilder object.
  *
- * inputs it not garanteed to be valid after the call
+ * inputs are not guaranteed to be valid after the call
  */
 ModelBuilder& ModelBuilder::withConstraints(std::vector<Constraint>&& constraints)
 {
-    fillMapFrom(model_.constraints_, constraints);
+    fillMapFrom(model_.constraints_, constraints, *this);
     return *this;
 }
 
 /**
- * \brief Sets the ports of the model.
+ * \brief Sets the port-field definitions of the model.
  *
- * \param ports A vector of Port objects to set.
+ * \param portFieldDefinitions A vector of PortFieldDefinition objects to set.
  * \return Reference to the ModelBuilder object.
  *
- * inputs it not garanteed to be valid after the call
+ * inputs are not guaranteed to be valid after the call
  */
 ModelBuilder& ModelBuilder::withPortFieldDefinitions(
   std::vector<PortFieldDefinition>&& portFieldDefinitions)
@@ -168,6 +192,20 @@ ModelBuilder& ModelBuilder::withPortFieldDefinitions(
                        return std::make_pair(PortFieldKey{.portId = id, .fieldId = fieldId},
                                              std::move(pfd));
                    });
+    return *this;
+}
+
+/**
+ * \brief Sets the extra outputs of the model.
+ *
+ * \param extraOutputs A vector of ExtraOutput objects to set.
+ * \return Reference to the ModelBuilder object.
+ *
+ * inputs are not guaranteed to be valid after the call
+ */
+ModelBuilder& ModelBuilder::withExtraOutputs(std::vector<ExtraOutput>&& extraOutputs)
+{
+    fillMapFrom(model_.extraOutputs_, extraOutputs, *this);
     return *this;
 }
 
