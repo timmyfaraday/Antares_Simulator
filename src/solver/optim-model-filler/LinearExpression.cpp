@@ -19,8 +19,6 @@
  * along with Antares_Simulator. If not, see <https://opensource.org/license/mpl-2-0/>.
  */
 
-#include <algorithm>
-#include <functional>
 #include <stdexcept>
 
 #include <antares/solver/optim-model-filler/LinearExpression.h>
@@ -45,22 +43,8 @@ FullKeyMap scale_map(const FullKeyMap& map, double scale)
     return result;
 }
 
-LinearExpression::LinearExpression(double offset, FullKeyMap coef_per_var):
-    offset_(offset),
-    terms_(),
-    cache_(std::move(coef_per_var)),
-    cacheValid_(true)
-{
-    terms_.reserve(cache_.size());
-    for (const auto& [k, v]: cache_)
-    {
-        terms_.emplace_back(k, v);
-    }
-}
-
 // Static helper: scale vector of terms
-std::vector<LinearExpression::RawTerm> LinearExpression::scaleTerms(const std::vector<RawTerm>& src,
-                                                                    double factor)
+std::vector<RawTerm> scaleTerms(const std::vector<RawTerm>& src, double factor)
 {
     constexpr double epsilon = 1e-12;
     if (std::abs(factor - 1.0) < epsilon)
@@ -76,19 +60,32 @@ std::vector<LinearExpression::RawTerm> LinearExpression::scaleTerms(const std::v
     return out;
 }
 
+LinearExpression::LinearExpression(double offset, FullKeyMap coef_per_var):
+    offset_(offset),
+    terms_(),
+    unique_terms_(std::move(coef_per_var)),
+    am_I_valid_(true)
+{
+    terms_.reserve(unique_terms_.size());
+    for (const auto& [k, v]: unique_terms_)
+    {
+        terms_.emplace_back(k, v);
+    }
+}
+
 void LinearExpression::materialize() const
 {
-    if (cacheValid_)
+    if (am_I_valid_)
     {
         return;
     }
-    cache_.clear();
-    cache_.reserve(terms_.size());
+    unique_terms_.clear();
+    unique_terms_.reserve(terms_.size());
     for (const auto& [k, v]: terms_)
     {
-        cache_[k] += v; // accumulate duplicates
+        unique_terms_[k] += v; // accumulate duplicates
     }
-    cacheValid_ = true;
+    am_I_valid_ = true;
 }
 
 LinearExpression LinearExpression::operator+(const LinearExpression& other) const
@@ -101,7 +98,7 @@ LinearExpression LinearExpression::operator+(const LinearExpression& other) cons
 const FullKeyMap& LinearExpression::coefPerVar() const
 {
     materialize();
-    return cache_;
+    return unique_terms_;
 }
 
 LinearExpression& LinearExpression::operator+=(const LinearExpression& other)
