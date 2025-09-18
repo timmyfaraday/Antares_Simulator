@@ -58,8 +58,6 @@ WeeklyDataFromAntares HebdoProblemToLpsTranslator::translate(
     copy(problem->CoutLineaire, ret.LinearCost);
     copy(problem->Xmax, ret.Xmax);
     copy(problem->Xmin, ret.Xmin);
-    copy(problem->NomDesVariables, ret.variables);
-    copy(problem->NomDesContraintes, ret.constraints);
     copy(problem->SecondMembre, ret.RHS);
     copy(problem->Sens, ret.Direction);
 
@@ -73,7 +71,7 @@ ConstantDataFromAntares HebdoProblemToLpsTranslator::commonProblemData(
 {
     if (problem == nullptr)
     {
-        return ConstantDataFromAntares();
+        return {};
     }
 
     if (problem->NombreDeVariables <= 0)
@@ -113,6 +111,8 @@ ConstantDataFromAntares HebdoProblemToLpsTranslator::commonProblemData(
     ret.ColumnIndexes.resize(ret.CoeffCount);
     copy(problem->IndicesDebutDeLigne, ret.Mdeb);
     ret.Mdeb.push_back(ret.CoeffCount);
+    copy(problem->NomDesVariables, ret.VariablesMeaning);
+    copy(problem->NomDesContraintes, ret.ConstraintsMeaning);
     return ret;
 }
 

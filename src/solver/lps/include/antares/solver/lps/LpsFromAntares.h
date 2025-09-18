@@ -102,9 +102,6 @@ struct WeeklyDataFromAntares
     // NombreDeContraintes
     std::string name;
 
-    std::vector<std::string> variables;
-    std::vector<std::string> constraints;
-
     auto operator<=>(const WeeklyDataFromAntares& other) const = default;
 };
 
@@ -122,7 +119,7 @@ public:
      * @brief Checks if the LpsFromAntares object is empty.
      * Emptiness is defined by either the constant data or the weekly data being empty.
      */
-    bool empty() const;
+    [[nodiscard]] bool empty() const;
     /*
      * @brief Replaces the constant data in the LpsFromAntares object.
      * Copy happens
@@ -135,7 +132,7 @@ public:
     /*
      * @brief Retrieves weekly data from the LpsFromAntares object.
      */
-    const WeeklyDataFromAntares& weeklyData(WeeklyProblemId id) const;
+    [[nodiscard]] const WeeklyDataFromAntares& weeklyData(WeeklyProblemId id) const;
     /*
      * @brief Retrieves the number of weeks in the LpsFromAntares object.
      */
