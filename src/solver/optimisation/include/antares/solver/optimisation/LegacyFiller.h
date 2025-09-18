@@ -12,13 +12,10 @@ class LegacyFiller: public Optimisation::LinearProblemApi::LinearProblemFiller
 public:
     explicit LegacyFiller(const PROBLEME_HEBDO* problemeHebdo, bool namedProblems);
     void addVariables(Optimisation::LinearProblemApi::ILinearProblem& pb,
-                      Optimisation::LinearProblemApi::ILinearProblemData& data,
                       const Optimisation::LinearProblemApi::FillContext& ctx) override;
     void addConstraints(Optimisation::LinearProblemApi::ILinearProblem& pb,
-                        Optimisation::LinearProblemApi::ILinearProblemData& data,
                         const Optimisation::LinearProblemApi::FillContext& ctx) override;
     void addObjective(Optimisation::LinearProblemApi::ILinearProblem& pb,
-                      Optimisation::LinearProblemApi::ILinearProblemData& data,
                       const Optimisation::LinearProblemApi::FillContext& ctx) override;
 
 private:

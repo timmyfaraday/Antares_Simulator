@@ -152,7 +152,6 @@ bool checkTimeSteps(const LinearProblemApi::FillContext& ctx)
 }
 
 void ComponentFiller::addVariables(LinearProblemApi::ILinearProblem& pb,
-                                   LinearProblemApi::ILinearProblemData& data,
                                    const LinearProblemApi::FillContext& ctx)
 {
     if (!checkTimeSteps(ctx))
@@ -257,7 +256,6 @@ void ComponentFiller::addTimeDependentConstraints(
 }
 
 void ComponentFiller::addConstraints(LinearProblemApi::ILinearProblem& pb,
-                                     LinearProblemApi::ILinearProblemData& data,
                                      const LinearProblemApi::FillContext& ctx)
 {
     Optimization::ReadLinearConstraintVisitor visitor(evaluationContextProvider_, ctx, component_);
@@ -280,7 +278,6 @@ void ComponentFiller::addConstraints(LinearProblemApi::ILinearProblem& pb,
 }
 
 void ComponentFiller::addObjective(Optimisation::LinearProblemApi::ILinearProblem& pb,
-                                   Optimisation::LinearProblemApi::ILinearProblemData& data,
                                    const Optimisation::LinearProblemApi::FillContext& ctx)
 {
     auto model = component_.getModel();
