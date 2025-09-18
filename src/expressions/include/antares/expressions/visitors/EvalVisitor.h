@@ -24,8 +24,8 @@
 #include <sstream>
 #include <variant>
 
-#include <antares/expressions/visitors/EvaluationContext.h>
 #include <antares/optimisation/linear-problem-api/ILinearProblemData.h>
+#include "antares/expressions/IEvaluationContextProvider.h"
 #include "antares/expressions/visitors/NodeVisitor.h"
 #include "antares/solver/optim-model-filler/VariableDictionary.h"
 #include "antares/study/system-model/component.h"
@@ -133,11 +133,20 @@ public:
 
     [[nodiscard]] std::vector<double> valuesAsVector() const
     {
-        if (!std::holds_alternative<std::vector<double>>(value_))
+        if (const auto* v = std::get_if<std::vector<double>>(&value_))
         {
-            throw EvalResultTypeError("Expected a vector but found a double.");
+            return *v;
         }
-        return std::get<std::vector<double>>(value_);
+        throw EvalResultTypeError("Expected a vector but found a double.");
+    }
+
+    [[nodiscard]] double getValueInVector(unsigned index) const
+    {
+        if (const auto* v = std::get_if<std::vector<double>>(&value_))
+        {
+            return (*v)[index];
+        }
+        throw EvalResultTypeError("Expected a vector but found a double.");
     }
 
     EvaluationResult operator[](int timeIndex) const;
@@ -261,18 +270,17 @@ public:
      * @param context The evaluation context.
      * @param fillContext
      */
-    explicit EvalVisitor(EvaluationContext context,
-                         Optimisation::LinearProblemApi::FillContext fillContext);
-    explicit EvalVisitor(EvaluationContext context,
-                         Optimisation::LinearProblemApi::FillContext fillContext,
-                         const ModelerStudy::SystemModel::Component* component);
+    explicit EvalVisitor(const IEvaluationContextProvider& contextProvider,
+                         const Optimisation::LinearProblemApi::FillContext& fillContext,
+                         const ModelerStudy::SystemModel::Component& component);
 
     std::string name() const override;
 
 private:
     const EvaluationContext context_;
-    Optimisation::LinearProblemApi::FillContext fillContext_;
-    const ModelerStudy::SystemModel::Component* component_ = nullptr;
+    const IEvaluationContextProvider& contextProvider_;
+    const Optimisation::LinearProblemApi::FillContext& fillContext_;
+    const ModelerStudy::SystemModel::Component& component_;
 
     EvaluationResult visit(const Nodes::SumNode* node) override;
     EvaluationResult visit(const Nodes::SubtractionNode* node) override;
