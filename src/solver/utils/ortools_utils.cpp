@@ -359,10 +359,8 @@ const std::map<std::string, struct OrtoolsUtils::SolverNames> OrtoolsUtils::mpSo
   {"gurobi", {"gurobi_lp", "gurobi"}}};
 
 const std::map<std::string, math_opt::SolverType> OrtoolsUtils::mathoptSolverMap = {
-  {"pdlp", math_opt::SolverType::kPdlp},
-  {"scip", math_opt::SolverType::kGscip},
-  {"xpress", math_opt::SolverType::kXpress},
-  {"gurobi", math_opt::SolverType::kGurobi}};
+//   {"pdlp", math_opt::SolverType::kPdlp},
+  {"scip", math_opt::SolverType::kGscip}};
 
 std::list<std::string> availableLinearSolversList()
 {
