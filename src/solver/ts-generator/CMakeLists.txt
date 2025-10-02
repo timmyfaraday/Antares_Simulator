@@ -46,7 +46,6 @@ add_library(antares-solver-ts-generator
         ${SRC_GENERATORS}
         ${SRC_XCAST})
 
-find_package(fmt REQUIRED)
 target_link_libraries(antares-solver-ts-generator
         PRIVATE
         result_writer
@@ -55,7 +54,6 @@ target_link_libraries(antares-solver-ts-generator
         Antares::study
         Antares::misc
 		antares-solver-simulation
-		fmt::fmt
 )
 
 target_include_directories(antares-solver-ts-generator

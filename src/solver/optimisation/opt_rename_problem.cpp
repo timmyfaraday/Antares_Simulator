@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -180,12 +180,6 @@ void VariableNamer::ShortTermStorageLevel(unsigned int variable,
     SetShortTermStorageVariableName(variable, "Level", shortTermStorageName);
 }
 
-void VariableNamer::ShortTermStorageOverflow(unsigned int variable,
-                                             const std::string& shortTermStorageName)
-{
-    SetShortTermStorageVariableName(variable, "Overflow", shortTermStorageName);
-}
-
 void VariableNamer::ShortTermStorageCostVariationInjection(unsigned int variable,
                                                            const std::string& shortTermStorageName)
 {
@@ -196,6 +190,11 @@ void VariableNamer::ShortTermStorageCostVariationWithdrawal(unsigned int variabl
                                                             const std::string& shortTermStorageName)
 {
     SetShortTermStorageVariableName(variable, "CostVariationWithdrawal", shortTermStorageName);
+}
+
+void VariableNamer::NetPosition(unsigned int constraint)
+{
+    SetAreaElementNameHour(constraint, "NetPositionVariable");
 }
 
 void VariableNamer::HydProd(unsigned int variable)
@@ -279,6 +278,11 @@ void ConstraintNamer::CsrAreaBalance(unsigned int constraint)
 void ConstraintNamer::AreaBalance(unsigned int constraint)
 {
     SetAreaElementNameHour(constraint, "AreaBalance");
+}
+
+void ConstraintNamer::NetPosition(unsigned int constraint)
+{
+    SetAreaElementNameHour(constraint, "NetPositionConstraint");
 }
 
 void ConstraintNamer::FictiveLoads(unsigned int constraint)

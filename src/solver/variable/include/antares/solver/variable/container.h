@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -111,7 +111,8 @@ public:
     */
     void yearEnd(unsigned int year, unsigned int numSpace);
 
-    void computeSummary(unsigned int year, unsigned int numSpace);
+    void computeSummary(std::map<unsigned int, unsigned int>& numSpaceToYear,
+                        unsigned int nbYearsForCurrentSummary);
 
     template<class V>
     void yearEndSpatialAggregates(V& allVars, unsigned int year, unsigned int numSpace);
@@ -120,7 +121,9 @@ public:
     void yearEndSpatialAggregates(V& allVars, unsigned int year, const SetT& set);
 
     template<class V>
-    void computeSpatialAggregatesSummary(V& allVars, unsigned int year, unsigned int numSpace);
+    void computeSpatialAggregatesSummary(V& allVars,
+                                         std::map<unsigned int, unsigned int>& numSpaceToYear,
+                                         unsigned int);
 
     template<class V>
     void simulationEndSpatialAggregates(V& allVars);

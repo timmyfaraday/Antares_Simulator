@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -44,22 +44,9 @@ void AreaBalance::add(int pdt, int pays)
 
     builder.updateHourWithinWeek(pdt);
 
-    int interco = data.IndexDebutIntercoOrigine[pays];
-    while (interco >= 0)
-    {
-        builder.NTCDirect(interco, 1.0);
-        interco = data.IndexSuivantIntercoOrigine[interco];
-    }
-
-    interco = data.IndexDebutIntercoExtremite[pays];
-    while (interco >= 0)
-    {
-        builder.NTCDirect(interco, -1.0);
-        interco = data.IndexSuivantIntercoExtremite[interco];
-    }
-
     ExportPaliers(data.PaliersThermiquesDuPays[pays], builder);
-    builder.HydProd(pays, -1.0)
+    builder.NetPosition(pays, 1)
+      .HydProd(pays, -1.0)
       .Pumping(pays, 1.0)
       .PositiveUnsuppliedEnergy(pays, -1.0)
       .NegativeUnsuppliedEnergy(pays, 1.0);

@@ -1,32 +1,39 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
- * See AUTHORS.txt
- * SPDX-License-Identifier: MPL-2.0
- * This file is part of Antares-Simulator,
- * Adequacy and Performance assessment for interconnected energy networks.
- *
- * Antares_Simulator is free software: you can redistribute it and/or modify
- * it under the terms of the Mozilla Public Licence 2.0 as published by
- * the Mozilla Foundation, either version 2 of the License, or
- * (at your option) any later version.
- *
- * Antares_Simulator is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * Mozilla Public Licence 2.0 for more details.
- *
- * You should have received a copy of the Mozilla Public Licence 2.0
- * along with Antares_Simulator. If not, see <https://opensource.org/license/mpl-2-0/>.
- */
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
+** See AUTHORS.txt
+** SPDX-License-Identifier: MPL-2.0
+** This file is part of Antares-Simulator,
+** Adequacy and Performance assessment for interconnected energy networks.
+**
+** Antares_Simulator is free software: you can redistribute it and/or modify
+** it under the terms of the Mozilla Public Licence 2.0 as published by
+** the Mozilla Foundation, either version 2 of the License, or
+** (at your option) any later version.
+**
+** Antares_Simulator is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+** Mozilla Public Licence 2.0 for more details.
+**
+** You should have received a copy of the Mozilla Public Licence 2.0
+** along with Antares_Simulator. If not, see <https://opensource.org/license/mpl-2-0/>.
+*/
 #ifndef __SOLVER_VARIABLE_STORAGE_STD_DEVIATION_H__
 #define __SOLVER_VARIABLE_STORAGE_STD_DEVIATION_H__
 
 #include <cmath>
 #include <float.h>
+#include <limits>
 
-using HighPrecision = long double;
-
-namespace Antares::Solver::Variable::R::AllYears
+namespace Antares
+{
+namespace Solver
+{
+namespace Variable
+{
+namespace R
+{
+namespace AllYears
 {
 template<class NextT = Empty, int FileFilter = Variable::Category::FileLevel::allFile>
 struct StdDeviation: public NextT
@@ -55,13 +62,22 @@ public:
         return "std deviation";
     }
 
+public:
+    StdDeviation()
+    {
+        using namespace Yuni;
+        stdDeviationHourly = nullptr;
+    }
+
+    ~StdDeviation()
+    {
+        Antares::Memory::Release(stdDeviationHourly);
+    }
+
 protected:
     void initializeFromStudy(Antares::Data::Study& study)
     {
-        stdDeviationHourly.assign(HOURS_PER_YEAR, 0.);
-        stdDeviationDaily.assign(DAYS_PER_YEAR, 0.);
-        stdDeviationWeekly.assign(WEEKS_PER_YEAR, 0.);
-        stdDeviationMonthly.assign(MONTHS_PER_YEAR, 0.);
+        Antares::Memory::Allocate<double>(stdDeviationHourly, HOURS_PER_YEAR);
         // Next
         NextType::initializeFromStudy(study);
 
@@ -72,10 +88,10 @@ protected:
     void reset()
     {
         // Reset
-        stdDeviationHourly.assign(HOURS_PER_YEAR, 0.);
-        stdDeviationDaily.assign(DAYS_PER_YEAR, 0.);
-        stdDeviationWeekly.assign(WEEKS_PER_YEAR, 0.);
-        stdDeviationMonthly.assign(MONTHS_PER_YEAR, 0.);
+        (void)::memset(stdDeviationMonthly, 0, sizeof(double) * MONTHS_PER_YEAR);
+        (void)::memset(stdDeviationWeekly, 0, sizeof(double) * WEEKS_PER_YEAR);
+        (void)::memset(stdDeviationDaily, 0, sizeof(double) * DAYS_PER_YEAR);
+        Antares::Memory::Zero(HOURS_PER_YEAR, stdDeviationHourly);
         stdDeviationYear = 0.;
         // Next
         NextType::reset();
@@ -129,25 +145,24 @@ protected:
                 InternalExportValues<S, HOURS_PER_YEAR, VCardT, Category::hourly>(
                   report,
                   results,
-                  stdDeviationHourly.data());
+                  Memory::RawPointer(stdDeviationHourly));
                 break;
             case Category::daily:
-                InternalExportValues<S, DAYS_PER_YEAR, VCardT, Category::daily>(
-                  report,
-                  results,
-                  stdDeviationDaily.data());
+                InternalExportValues<S, DAYS_PER_YEAR, VCardT, Category::daily>(report,
+                                                                                results,
+                                                                                stdDeviationDaily);
                 break;
             case Category::weekly:
                 InternalExportValues<S, WEEKS_PER_YEAR, VCardT, Category::weekly>(
                   report,
                   results,
-                  stdDeviationWeekly.data());
+                  stdDeviationWeekly);
                 break;
             case Category::monthly:
                 InternalExportValues<S, MONTHS_PER_YEAR, VCardT, Category::monthly>(
                   report,
                   results,
-                  stdDeviationMonthly.data());
+                  stdDeviationMonthly);
                 break;
             case Category::annual:
                 InternalExportValues<S, 1, VCardT, Category::annual>(report,
@@ -164,18 +179,26 @@ protected:
                                                         precision);
     }
 
+    template<template<class, int> class DecoratorT>
+    Antares::Memory::Stored<double>::ConstReturnType hourlyValuesForSpatialAggregate() const
+    {
+        if (Yuni::Static::Type::StrictlyEqual<DecoratorT<Empty, 0>, StdDeviation<Empty, 0>>::Yes)
+        {
+            return stdDeviationHourly;
+        }
+        return NextType::template hourlyValuesForSpatialAggregate<DecoratorT>();
+    }
+
 public:
-    std::vector<HighPrecision> stdDeviationMonthly;
-    std::vector<HighPrecision> stdDeviationWeekly;
-    std::vector<HighPrecision> stdDeviationDaily;
-    std::vector<HighPrecision> stdDeviationHourly;
-    HighPrecision stdDeviationYear = 0;
+    double stdDeviationMonthly[MONTHS_PER_YEAR];
+    double stdDeviationWeekly[WEEKS_PER_YEAR];
+    double stdDeviationDaily[DAYS_PER_YEAR];
+    Antares::Memory::Stored<double>::Type stdDeviationHourly;
+    double stdDeviationYear;
 
 private:
-    template<class S, unsigned int Size, class VCardT, int PrecisionT>
-    void InternalExportValues(SurveyResults& report,
-                              const S& results,
-                              const HighPrecision* array) const
+    template<class S, unsigned int Size, class VCardT, int PrecisionT, class A>
+    void InternalExportValues(SurveyResults& report, const S& results, const A& array) const
     {
         assert(report.data.columnIndex < report.maxVariables && "Column index out of bounds");
 
@@ -203,9 +226,8 @@ private:
         {
             for (unsigned int i = 0; i != Size; ++i)
             {
-                double v = results.avgdata.hourly[i];
-                double a = array[i];
-                target[i] = squareRootChecked(a - v * v);
+                target[i] = squareRootChecked(
+                  array[i] - results.avgdata.hourly[i] * results.avgdata.hourly[i]);
             }
         }
         break;
@@ -213,9 +235,8 @@ private:
         {
             for (unsigned int i = 0; i != Size; ++i)
             {
-                double v = results.avgdata.daily[i];
-                double a = array[i];
-                target[i] = squareRootChecked(a - v * v);
+                target[i] = squareRootChecked(
+                  array[i] - results.avgdata.daily[i] * results.avgdata.daily[i]);
             }
         }
         break;
@@ -223,9 +244,8 @@ private:
         {
             for (unsigned int i = 0; i != Size; ++i)
             {
-                double v = results.avgdata.weekly[i];
-                double a = array[i];
-                target[i] = squareRootChecked(a - v * v);
+                target[i] = squareRootChecked(
+                  array[i] - results.avgdata.weekly[i] * results.avgdata.weekly[i]);
             }
         }
         break;
@@ -233,9 +253,8 @@ private:
         {
             for (unsigned int i = 0; i != Size; ++i)
             {
-                double v = results.avgdata.monthly[i];
-                double a = array[i];
-                target[i] = squareRootChecked(a - v * v);
+                target[i] = squareRootChecked(
+                  array[i] - results.avgdata.monthly[i] * results.avgdata.monthly[i]);
             }
         }
         break;
@@ -284,6 +303,10 @@ private:
 
 }; // class StdDeviation
 
-} // namespace Antares::Solver::Variable::R::AllYears
+} // namespace AllYears
+} // namespace R
+} // namespace Variable
+} // namespace Solver
+} // namespace Antares
 
 #endif // __SOLVER_VARIABLE_STORAGE_STD_DEVIATION_H__

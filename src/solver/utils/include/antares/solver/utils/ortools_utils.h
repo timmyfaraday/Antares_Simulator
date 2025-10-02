@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -40,39 +40,37 @@ enum class SolverType;
 
 using namespace operations_research;
 
-// TODO use Objective().Value() instead
-// This is a temporary workaround for Windows
-double getObjectiveValue(const MPSolver* solver);
-
 void ORTOOLS_EcrireJeuDeDonneesLineaireAuFormatMPS(MPSolver* solver,
                                                    Antares::Solver::IResultWriter& writer,
                                                    const std::string& filename);
-
-/*!
- *  \brief Returns a comma-seperated-list of available ortools linear solver names on our side
- *
- *  \return Comma-seperated-list of available ortools linear solver names
- */
-std::string toString(const std::list<std::string>& solverList);
 
 /*!
  *  \brief Returns a list of available ortools linear solver names on our side
  *
  *  \return List of available ortools linear solver names
  */
-std::list<std::string> availableLinearSolversList();
+std::list<std::string> getAvailableLinearSolverNames();
+
+/*!
+ *  \brief Returns a comma-seperated-list of available ortools linear solver names on our side
+ *
+ *  \return Comma-seperated-list of available ortools linear solver names
+ */
+std::string availableLinearSolversString();
 
 /*!
  *  \brief Returns a list of available ortools quadratic solver names on our side
  *
  *  \return List of available ortools quadratic solver names
  */
-std::list<std::string> availableQuadraticSolversList();
+std::list<std::string> getAvailableQuadraticSolverNames();
 
 /*!
- *  \brief Check if a linear solver is available
+ *  \brief Returns a comma-seperated-list of available ortools linear solver names on our side
+ *
+ *  \return Comma-seperated-list of available ortools linear solver names
  */
-bool isLinearSolverAvailable(const std::string& solverName);
+std::string availableQuadraticSolversString();
 
 /*!
  *  \brief Create a MPSolver with correct linear or mixed variant
@@ -84,7 +82,7 @@ MPSolver* MPSolverFactory(const bool isMip, const std::string& solverName);
 std::string generateTempPath(const std::string& filename);
 void removeTemporaryFile(const std::string& tmpPath);
 
-class OrtoolsUtils final
+class OrtoolsUtils
 {
 public:
     struct SolverNames

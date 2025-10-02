@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -149,12 +149,11 @@ struct DebugData
                              uint y,
                              const Data::AreaName& areaName) const
     {
-        auto path = fs::path("debug") / "solver" / std::to_string(1 + y)
-                    / ("daily." + areaName + ".txt").c_str();
+        std::ostringstream buffer;
+        auto path = fs::path("debug") / "solver" / std::to_string(1 + y) / "daily."
+                    / areaName.c_str() / ".txt";
 
-        std::ostringstream fileContent;
-        fileContent << "\tNiveau init : " << hydro_specific.monthly[initReservoirLvlMonth].MOL
-                    << "\n";
+        buffer << "\tNiveau init : " << hydro_specific.monthly[initReservoirLvlMonth].MOL << "\n";
         for (uint month = 0; month != MONTHS_PER_YEAR; ++month)
         {
             uint realmonth = (initReservoirLvlMonth + month) % MONTHS_PER_YEAR;
@@ -167,15 +166,15 @@ struct DebugData
             uint firstDay = calendar.months[simulationMonth].daysYear.first;
             uint endDay = firstDay + daysPerMonth;
 
-            fileContent << "\n";
-            fileContent << "-------------\n";
-            fileContent << monthName.c_str() << "\n";
-            fileContent << "-------------\n";
-            fileContent << "\t\t\tNiveauMin\tApports\t\tTurbMax\t\tTurbCible\tTurbCible "
-                           "MAJ\tNiveaux D\tNiveaux F\tTurbines\t";
-            fileContent << "Overflows\tDeviations\tViolations\tDeviation Max\tViolation "
-                           "Max\tWaste\t\tCout total\tTurb mois no previous W\t\tTurb mois + "
-                           "previous W \n";
+            buffer << "\n";
+            buffer << "-------------\n";
+            buffer << monthName.c_str() << "\n";
+            buffer << "-------------\n";
+            buffer << "\t\t\tNiveauMin\tApports\t\tTurbMax\t\tTurbCible\tTurbCible "
+                      "MAJ\tNiveaux D\tNiveaux F\tTurbines\t";
+            buffer << "Overflows\tDeviations\tViolations\tDeviation Max\tViolation "
+                      "Max\tWaste\t\tCout total\tTurb mois no previous W\t\tTurb mois + "
+                      "previous W \n";
 
             uint dayMonth = 1;
             for (uint day = firstDay; day != endDay; ++day)
@@ -189,30 +188,29 @@ struct DebugData
                 double turbCible = dailyTargetGen[day] / reservoirCapacity;
                 double turbCibleUpdated = dailyTargetGen[day] / reservoirCapacity
                                           + previousMonthWaste[realmonth] / daysPerMonth;
-                fileContent << day << '\t' << '\t' << dayMonth << '\t' << lowLevel[day] * 100
-                            << '\t' << apports * 100 << '\t' << turbMax * 100 << '\t'
-                            << turbCible * 100 << '\t' << turbCibleUpdated * 100 << '\t' << '\t'
-                            << niveauDeb * 100 << '\t' << niveauFin * 100 << '\t' << turbines * 100
-                            << '\t' << OVF[day] * 100 << '\t' << DEV[day] * 100 << '\t'
-                            << VIO[day] * 100;
+                buffer << day << '\t' << '\t' << dayMonth << '\t' << lowLevel[day] * 100 << '\t'
+                       << apports * 100 << '\t' << turbMax * 100 << '\t' << turbCible * 100 << '\t'
+                       << turbCibleUpdated * 100 << '\t' << '\t' << niveauDeb * 100 << '\t'
+                       << niveauFin * 100 << '\t' << turbines * 100 << '\t' << OVF[day] * 100
+                       << '\t' << DEV[day] * 100 << '\t' << VIO[day] * 100;
                 if (dayMonth == 1)
                 {
-                    fileContent << '\t' << deviationMax[realmonth] * 100 << '\t' << '\t'
-                                << violationMax[realmonth] * 100 << '\t' << '\t'
-                                << WASTE[realmonth] * 100 << '\t' << CoutTotal[realmonth] << '\t'
-                                << (hydro_specific.monthly[realmonth].MOG / reservoirCapacity) * 100
-                                << '\t' << '\t' << '\t' << '\t' << '\t'
-                                << (hydro_specific.monthly[realmonth].MOG / reservoirCapacity
-                                    + previousMonthWaste[realmonth])
-                                     * 100;
+                    buffer << '\t' << deviationMax[realmonth] * 100 << '\t' << '\t'
+                           << violationMax[realmonth] * 100 << '\t' << '\t'
+                           << WASTE[realmonth] * 100 << '\t' << CoutTotal[realmonth] << '\t'
+                           << (hydro_specific.monthly[realmonth].MOG / reservoirCapacity) * 100
+                           << '\t' << '\t' << '\t' << '\t' << '\t'
+                           << (hydro_specific.monthly[realmonth].MOG / reservoirCapacity
+                               + previousMonthWaste[realmonth])
+                                * 100;
                 }
-                fileContent << '\n';
+                buffer << '\n';
 
                 dayMonth++;
             }
         }
-        auto file_content_str = fileContent.str();
-        pWriter.addEntryFromBuffer(path, file_content_str);
+        auto buffer_str = buffer.str();
+        pWriter.addEntryFromBuffer(path, buffer_str);
     }
 };
 

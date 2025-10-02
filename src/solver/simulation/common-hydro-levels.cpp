@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -57,9 +57,14 @@ void interpolateWaterValue(const Data::AreaList& areas,
             return;
         }
 
+        if (!area->hydro.useWaterValue)
+        {
+            return;
+        }
+
         double reservoirCapacity = area->hydro.reservoirCapacity;
 
-        const std::vector<double>& niv = weeklyResults.niveauxHoraires;
+        std::vector<double>& niv = weeklyResults.niveauxHoraires;
 
         waterVal[0] = Data::getWaterValue(100 * problem.previousSimulationFinalLevel[index]
                                             / reservoirCapacity,

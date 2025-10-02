@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -195,13 +195,18 @@ public:
         NextType::yearEnd(year, numSpace);
     }
 
-    void computeSummary(unsigned int year, unsigned int numSpace)
+    void computeSummary(std::map<unsigned int, unsigned int>& numSpaceToYear,
+                        unsigned int nbYearsForCurrentSummary)
     {
-        // Merge all those values with the global results
-        AncestorType::pResults.merge(year, pValuesForTheCurrentYear[numSpace]);
+        for (unsigned int numSpace = 0; numSpace < nbYearsForCurrentSummary; ++numSpace)
+        {
+            // Merge all those values with the global results
+            AncestorType::pResults.merge(numSpaceToYear[numSpace] /*year*/,
+                                         pValuesForTheCurrentYear[numSpace]);
+        }
 
         // Next variable
-        NextType::computeSummary(year, numSpace);
+        NextType::computeSummary(numSpaceToYear, nbYearsForCurrentSummary);
     }
 
     void hourBegin(unsigned int hourInTheYear)

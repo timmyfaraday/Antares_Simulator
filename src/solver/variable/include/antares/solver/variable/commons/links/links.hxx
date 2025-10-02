@@ -1,30 +1,34 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
- * See AUTHORS.txt
- * SPDX-License-Identifier: MPL-2.0
- * This file is part of Antares-Simulator,
- * Adequacy and Performance assessment for interconnected energy networks.
- *
- * Antares_Simulator is free software: you can redistribute it and/or modify
- * it under the terms of the Mozilla Public Licence 2.0 as published by
- * the Mozilla Foundation, either version 2 of the License, or
- * (at your option) any later version.
- *
- * Antares_Simulator is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * Mozilla Public Licence 2.0 for more details.
- *
- * You should have received a copy of the Mozilla Public Licence 2.0
- * along with Antares_Simulator. If not, see <https://opensource.org/license/mpl-2-0/>.
- */
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
+** See AUTHORS.txt
+** SPDX-License-Identifier: MPL-2.0
+** This file is part of Antares-Simulator,
+** Adequacy and Performance assessment for interconnected energy networks.
+**
+** Antares_Simulator is free software: you can redistribute it and/or modify
+** it under the terms of the Mozilla Public Licence 2.0 as published by
+** the Mozilla Foundation, either version 2 of the License, or
+** (at your option) any later version.
+**
+** Antares_Simulator is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+** Mozilla Public Licence 2.0 for more details.
+**
+** You should have received a copy of the Mozilla Public Licence 2.0
+** along with Antares_Simulator. If not, see <https://opensource.org/license/mpl-2-0/>.
+*/
 #ifndef __SOLVER_VARIABLE_INC_LINK_HXX__
 #define __SOLVER_VARIABLE_INC_LINK_HXX__
 
 #include <antares/study/filter.h>
 #include "antares/solver/variable/endoflist.h" // For UNUSED_VARIABLE, should be somewhere else
 
-namespace Antares::Solver::Variable
+namespace Antares
+{
+namespace Solver
+{
+namespace Variable
 {
 
 template<class VariablePerLink>
@@ -131,11 +135,13 @@ inline void Links<VariablePerLink>::yearEnd(uint year, uint numSpace)
 }
 
 template<class VariablePerLink>
-inline void Links<VariablePerLink>::computeSummary(unsigned int year, unsigned int numSpace)
+inline void Links<VariablePerLink>::computeSummary(
+  std::map<unsigned int, unsigned int>& numSpaceToYear,
+  unsigned int nbYearsForCurrentSummary)
 {
     for (uint i = 0; i != pLinkCount; ++i)
     {
-        pLinks[i].computeSummary(year, numSpace);
+        pLinks[i].computeSummary(numSpaceToYear, nbYearsForCurrentSummary);
     }
 }
 
@@ -435,6 +441,8 @@ void Links<VariablePerLink>::beforeYearByYearExport(uint year, uint numSpace)
     }
 }
 
-} // namespace Antares::Solver::Variable
+} // namespace Variable
+} // namespace Solver
+} // namespace Antares
 
 #endif // __SOLVER_VARIABLE_INC_LINK_HXX__

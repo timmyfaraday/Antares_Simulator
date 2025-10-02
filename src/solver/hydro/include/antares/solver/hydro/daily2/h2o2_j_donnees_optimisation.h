@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -135,7 +135,7 @@ typedef struct
     std::vector<PROBLEME_LINEAIRE_ETENDU_PARTIE_FIXE> ProblemeLineaireEtenduPartieFixe;
     std::vector<PROBLEME_LINEAIRE_ETENDU_PARTIE_VARIABLE> ProblemeLineaireEtenduPartieVariable;
 
-    std::vector<PROBLEME_SPX_WRAPPER>
+    std::vector<PROBLEME_SPX*>
       ProblemeSpx; /* Il y en a 1 par reservoir. Un probleme couvre 1 mois */
 } PROBLEME_HYDRAULIQUE_ETENDU;
 
@@ -145,7 +145,7 @@ constexpr double noiseAmplitude = 1e-3;
 constexpr unsigned int seed = 0x79683264; // "hyd2" in hexa
 } // namespace Antares::Constants
 
-class Hydro_problem_costs final
+class Hydro_problem_costs
 {
 public:
     Hydro_problem_costs(const Data::Parameters& parameters);

@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -50,7 +50,7 @@ void OPT_InitialiserLesBornesDesVariablesDuProblemeQuadratique(PROBLEME_HEBDO* p
         {
             ProblemeAResoudre->X[var] = 0.5
                                         * (ProblemeAResoudre->Xmax[var]
-                                           + ProblemeAResoudre->Xmin[var]);
+                                           - ProblemeAResoudre->Xmin[var]);
             ProblemeAResoudre->TypeDeVariable[var] = VARIABLE_FIXE;
         }
         else

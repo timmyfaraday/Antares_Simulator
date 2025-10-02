@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -193,20 +193,24 @@ public:
         NextType::yearEnd(year, numSpace);
     }
 
-    void computeSummary(unsigned int year, unsigned int numSpace)
+    void computeSummary(std::map<unsigned int, unsigned int>& numSpaceToYear,
+                        unsigned int nbYearsForCurrentSummary)
     {
-        for (unsigned int i = 0; i < nbClusters_; ++i)
+        for (unsigned int numSpace = 0; numSpace < nbYearsForCurrentSummary; ++numSpace)
         {
-            // Merge all those values with the global results
-            AncestorType::pResults[i].merge(year, pValuesForTheCurrentYear[numSpace][i]);
+            for (unsigned int i = 0; i < nbClusters_; ++i)
+            {
+                // Merge all those values with the global results
+                AncestorType::pResults[i].merge(numSpaceToYear[numSpace],
+                                                pValuesForTheCurrentYear[numSpace][i]);
+            }
         }
 
         // Next variable
-        NextType::computeSummary(year, numSpace);
+        NextType::computeSummary(numSpaceToYear, nbYearsForCurrentSummary);
     }
 
     void hourForEachArea(State& state, unsigned int numSpace)
-
     {
         auto& area = state.area;
         auto& thermal = state.thermal;

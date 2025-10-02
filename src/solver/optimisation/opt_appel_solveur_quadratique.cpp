@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -41,12 +41,10 @@ extern "C"
 
 using namespace Antares;
 
-// TODO : there are 2 SolveWithSirius(...) solving a quadratic problem by interior point.
-// TODO : we should try to avoid code duplications.
-static void SolveWithSirius(const Solver::Optimization::SingleOptimOptions& options,
+static void SolveWithSirius(const Solver::Optimization::OptimizationOptions& options,
                             PROBLEME_ANTARES_A_RESOUDRE* ProblemeAResoudre)
 {
-    if (!options.solverParameters.empty())
+    if (!options.quadraticSolverParameters.empty())
     {
         logs.warning()
           << "Quadratic solver parameters are not supported by SIRIUS; they will be ignored.";
@@ -177,12 +175,12 @@ static void ProcessResult(PROBLEME_ANTARES_A_RESOUDRE* ProblemeAResoudre)
     }
 }
 
-bool OPT_AppelDuSolveurQuadratique(const Solver::Optimization::SingleOptimOptions& options,
+bool OPT_AppelDuSolveurQuadratique(const Solver::Optimization::OptimizationOptions& options,
                                    PROBLEME_ANTARES_A_RESOUDRE* ProblemeAResoudre)
 {
     // as long as sirius quadratic optimization is not supported through or-tools, we have to keep
     // this code separate
-    if (options.solverName.compare("sirius") == 0)
+    if (options.quadraticSolver == "sirius")
     {
         SolveWithSirius(options, ProblemeAResoudre);
     }

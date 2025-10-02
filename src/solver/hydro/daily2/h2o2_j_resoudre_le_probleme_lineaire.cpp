@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -33,7 +33,7 @@ void H2O2_J_ResoudreLeProblemeLineaire(DONNEES_MENSUELLES_ETENDUES& DonneesMensu
     auto& ProblemeLineaireEtenduPartieFixe = ProblemeHydrauliqueEtendu
                                                .ProblemeLineaireEtenduPartieFixe[NumeroDeProbleme];
 
-    PROBLEME_SPX* ProbSpx = ProblemeHydrauliqueEtendu.ProblemeSpx[NumeroDeProbleme].get();
+    PROBLEME_SPX* ProbSpx = ProblemeHydrauliqueEtendu.ProblemeSpx[NumeroDeProbleme];
     auto Probleme = std::make_unique<PROBLEME_SIMPLEXE>();
 
     bool premierPassage = true;
@@ -117,7 +117,7 @@ RESOLUTION:
 
     if (ProbSpx)
     {
-        ProblemeHydrauliqueEtendu.ProblemeSpx[NumeroDeProbleme].reset(ProbSpx);
+        ProblemeHydrauliqueEtendu.ProblemeSpx[NumeroDeProbleme] = ProbSpx;
     }
 
     ProblemeLineaireEtenduPartieVariable.ExistenceDUneSolution = Probleme->ExistenceDUneSolution;
@@ -127,7 +127,7 @@ RESOLUTION:
     {
         if (ProblemeLineaireEtenduPartieVariable.ExistenceDUneSolution != SPX_ERREUR_INTERNE)
         {
-            ProblemeHydrauliqueEtendu.ProblemeSpx[NumeroDeProbleme].reset(nullptr);
+            SPX_LibererProbleme(ProbSpx);
 
             ProbSpx = nullptr;
             premierPassage = false;

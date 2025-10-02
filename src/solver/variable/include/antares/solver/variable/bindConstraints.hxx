@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -168,12 +168,13 @@ void BindingConstraints<NextT>::initializeFromStudy(Data::Study& study)
 }
 
 template<class NextT>
-void BindingConstraints<NextT>::computeSummary(unsigned int year, unsigned int numSpace)
+void BindingConstraints<NextT>::computeSummary(std::map<unsigned int, unsigned int>& numSpaceToYear,
+                                               unsigned int nbYearsForCurrentSummary)
 {
     for (uint i = 0; i != pBCcount; ++i)
     {
         // Broadcast to all constraints
-        pBindConstraints[i].computeSummary(year, numSpace);
+        pBindConstraints[i].computeSummary(numSpaceToYear, nbYearsForCurrentSummary);
     }
 }
 
@@ -280,11 +281,14 @@ void BindingConstraints<NextT>::simulationEndSpatialAggregates(V& allVars)
 
 template<class NextT>
 template<class V>
-void BindingConstraints<NextT>::computeSpatialAggregatesSummary(V& allVars,
-                                                                unsigned int year,
-                                                                unsigned int numSpace)
+void BindingConstraints<NextT>::computeSpatialAggregatesSummary(
+  V& allVars,
+  std::map<unsigned int, unsigned int>& numSpaceToYear,
+  unsigned int nbYearsForCurrentSummary)
 {
-    NextType::template computeSpatialAggregatesSummary<V>(allVars, year, numSpace);
+    NextType::template computeSpatialAggregatesSummary<V>(allVars,
+                                                          numSpaceToYear,
+                                                          nbYearsForCurrentSummary);
 }
 
 template<class NextT>

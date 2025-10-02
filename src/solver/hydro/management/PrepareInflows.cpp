@@ -10,7 +10,13 @@ PrepareInflows::PrepareInflows(Data::AreaList& areas, const Date::Calendar& cale
 {
 }
 
-void PrepareInflows::loadInflows(uint year)
+void PrepareInflows::Run(uint year)
+{
+    LoadInflows(year);
+    ChangeInflowsToAccommodateFinalLevels(year);
+}
+
+void PrepareInflows::LoadInflows(uint year)
 {
     areas_.each(
       [this, year](Data::Area& area)
@@ -59,7 +65,7 @@ void PrepareInflows::loadInflows(uint year)
       });
 }
 
-void PrepareInflows::changeInflowsToAccommodateFinalLevels(uint year)
+void PrepareInflows::ChangeInflowsToAccommodateFinalLevels(uint year)
 {
     areas_.each(
       [&year](Data::Area& area)

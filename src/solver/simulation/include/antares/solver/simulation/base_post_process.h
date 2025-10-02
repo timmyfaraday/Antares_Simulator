@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -30,21 +30,31 @@ using namespace Antares::Data;
 using namespace Antares::Date;
 using AdqPatchParams = Antares::Data::AdequacyPatch::AdqPatchParams;
 
+namespace Antares::Solver::Optimization
+{
+class WeeklyOptimization;
+};
+
 namespace Antares::Solver::Simulation
 {
 
 struct optRuntimeData
 {
-    optRuntimeData(unsigned int y, unsigned int w, unsigned int h):
+    optRuntimeData(unsigned int y,
+                   unsigned int w,
+                   unsigned int h,
+                   Antares::Solver::Optimization::WeeklyOptimization& weeklyOptimization):
         year(y),
         week(w),
-        hourInTheYear(h)
+        hourInTheYear(h),
+        weeklyOptimization(weeklyOptimization)
     {
     }
 
     unsigned int year = 0;
     unsigned int week = 0;
     unsigned int hourInTheYear = 0;
+    Antares::Solver::Optimization::WeeklyOptimization& weeklyOptimization;
 };
 
 class basePostProcessCommand
@@ -70,12 +80,15 @@ public:
     // gp : to the create(...) method, and to underlying calls to constructors.
     // gp : In case we need new data for a new post process, we would not have to change
     // gp : the constructors' signatures of the post process list classes.
-    static std::unique_ptr<interfacePostProcessList> create(AdqPatchParams& adqPatchParams,
-                                                            PROBLEME_HEBDO* problemeHebdo,
-                                                            uint numSpace,
-                                                            AreaList& areas,
-                                                            const Data::Parameters& params,
-                                                            Calendar& calendar);
+    static std::unique_ptr<interfacePostProcessList> create(
+      AdqPatchParams& adqPatchParams,
+      PROBLEME_HEBDO* problemeHebdo,
+      uint numSpace,
+      AreaList& areas,
+      SheddingPolicy sheddingPolicy,
+      SimplexOptimization splxOptimization,
+      Calendar& calendar,
+      const OptimizationOptions& solverOptions);
     void runAll(const optRuntimeData& opt_runtime_data);
 
 protected:

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
+ * Copyright 2007-2024, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -19,21 +19,19 @@
  * along with Antares_Simulator. If not, see <https://opensource.org/license/mpl-2-0/>.
  */
 
-#include <fmt/format.h>
-
 #include <antares/solver/optim-model-filler/VariableDictionary.h>
 
 namespace Antares::Optimization
 {
 
-std::string VariableDictionary::buildVariableName(const PartialKey& key,
-                                                  std::optional<MCYearAndTime::MCYear> mcyear,
-                                                  std::optional<unsigned int> timestep)
+std::string buildVariableName(const PartialKey& key,
+                              std::optional<unsigned int> scenario,
+                              std::optional<unsigned int> timestep)
 {
-    std::string ret = fmt::format("{}.{}", key.getComponent(), key.getVariable());
-    if (mcyear.has_value())
+    std::string ret = key.getComponent() + "." + key.getVariable();
+    if (scenario.has_value())
     {
-        ret += "_s" + std::to_string(format_as(mcyear.value()));
+        ret += "_s" + std::to_string(*scenario);
     }
     if (timestep.has_value())
     {
@@ -53,8 +51,7 @@ unsigned int IntegerInterval::Iterator::operator*() const
 }
 
 IntegerInterval::Iterator& IntegerInterval::Iterator::operator++()
-{
-    // Prefix increment
+{ // Prefix increment
     ++current_;
     return *this;
 }
@@ -64,9 +61,9 @@ bool IntegerInterval::Iterator::operator!=(const Iterator& other) const
     return current_ != other.current_;
 }
 
-Dimensions::Dimensions(std::optional<IntegerInterval> mcYearInterval,
+Dimensions::Dimensions(std::optional<IntegerInterval> scenarioInterval,
                        std::optional<IntegerInterval> timeInterval):
-    mcyearInterval(mcYearInterval),
+    scenarioInterval(scenarioInterval),
     timeInterval(timeInterval)
 {
 }
@@ -78,7 +75,7 @@ bool Dimensions::isTimeDependent() const
 
 bool Dimensions::isScenarioDependent() const
 {
-    return mcyearInterval.has_value();
+    return scenarioInterval.has_value();
 }
 
 IntegerInterval Dimensions::getTimesteps() const
@@ -88,7 +85,7 @@ IntegerInterval Dimensions::getTimesteps() const
 
 IntegerInterval Dimensions::getScenarioIndices() const
 {
-    return mcyearInterval.value_or(IntegerInterval{.initialTime = 0, .finalTime = 0});
+    return scenarioInterval.value_or(IntegerInterval{});
 }
 
 unsigned int Dimensions::getNumberOfTimesteps() const
@@ -99,7 +96,7 @@ unsigned int Dimensions::getNumberOfTimesteps() const
 void VariableDictionary::VectorWithOffset::resize(size_t initial_size, unsigned int offset)
 {
     offset_ = offset;
-    values_.assign(initial_size, nullptr); // initialize all slots to nullptr
+    values_.resize(initial_size);
 }
 
 VariableDictionary::Value& VariableDictionary::VectorWithOffset::operator[](unsigned int index)
@@ -125,8 +122,7 @@ VariableDictionary::Value& VariableDictionary::VectorWithOffset::at(unsigned int
 
 namespace
 {
-template<typename T>
-std::optional<T> buildOptional(bool condition, T value)
+std::optional<unsigned int> buildOptional(bool condition, unsigned int value)
 {
     if (condition)
     {
@@ -142,88 +138,76 @@ std::optional<T> buildOptional(bool condition, T value)
 void VariableDictionary::addVariable(
   const Dimensions& dimensions,
   const PartialKey& key,
-  std::function<Value(const MCYearAndTime&, const std::string&)>&& func)
+  std::function<Value(const TimeAndScenario&, const std::string&)>&& func)
 {
-    auto& m = storageOfAddedMipVariables_[key];
-    const auto&& scenariosIndices = dimensions.getScenarioIndices();
+    auto& m = hmv[key];
+    const auto scenarios = dimensions.getScenarioIndices();
     const auto time_interval = dimensions.getTimesteps();
     const auto offset = *time_interval.begin();
-    for (const auto&& scenario: scenariosIndices)
+    m.resize(scenarios.size());
+    for (const auto scenario: scenarios)
     {
-        auto scenarioNumber = static_cast<MCYearAndTime::MCYear>(scenario);
-        m[scenarioNumber].resize(time_interval.size(), offset);
+        m[scenario].resize(time_interval.size(), offset);
         for (const auto timestep: time_interval)
         {
-            auto year = buildOptional<MCYearAndTime::MCYear>(dimensions.isScenarioDependent(),
-                                                             scenarioNumber);
+            const auto sc = buildOptional(dimensions.isScenarioDependent(), scenario);
             const auto ts = buildOptional(dimensions.isTimeDependent(), timestep);
-            const std::string name = buildVariableName(key, year, ts);
-            m[scenarioNumber][timestep] = func({.mcYear = scenarioNumber, .timestep = timestep},
-                                               name);
+            const std::string name = buildVariableName(key, sc, ts);
+            m[scenario][timestep] = func({.scenario = scenario, .timestep = timestep}, name);
         }
     }
 }
 
 VariableDictionary::Value VariableDictionary::operator[](const FullKey& k) const
 {
-    return storageOfAddedMipVariables_.at(k.getPartialKey())
-      .at(k.getScenario().value_or(MCYearAndTime::MCYear{0}))
+    return hmv.at(k.getPartialKey())
+      .at(k.getScenario().value_or(0))
       .at(k.getTimestep().value_or(0));
 }
 
 VariableDictionary::Value& VariableDictionary::operator[](const FullKey& k)
 {
-    return storageOfAddedMipVariables_[k.getPartialKey()]
-      .at(k.getScenario().value_or(MCYearAndTime::MCYear{0}))
-      .at(k.getTimestep().value_or(0));
+    return hmv[k.getPartialKey()].at(k.getScenario().value_or(0)).at(k.getTimestep().value_or(0));
 }
 
-const VariableDictionary::TwoIndexVectorByYear& VariableDictionary::operator[](
-  const PartialKey& k) const
+const VariableDictionary::TwoIndexVector& VariableDictionary::operator[](const PartialKey& k) const
 {
-    return storageOfAddedMipVariables_.at(k);
+    return hmv.at(k);
 }
 
 VariableDictionary::Value VariableDictionary::operator()(const std::string& component,
                                                          const std::string& variable) const
 {
-    return storageOfAddedMipVariables_.at(PartialKey(component, variable))
-      .at(MCYearAndTime::MCYear{0})
-      .at(0);
+    return hmv.at(PartialKey(component, variable)).at(0).at(0);
 }
 
 VariableDictionary::Value& VariableDictionary::operator()(const std::string& component,
                                                           const std::string& variable)
 {
-    return storageOfAddedMipVariables_.at(PartialKey(component, variable))
-      .at(MCYearAndTime::MCYear{0})
-      .at(0);
+    return hmv.at(PartialKey(component, variable)).at(0).at(0);
 }
 
 VariableDictionary::Value VariableDictionary::operator()(const std::string& component,
                                                          const std::string& variable,
-                                                         const MCYearAndTime::MCYear& scenario,
+                                                         unsigned int scenario,
                                                          unsigned int timestep) const
 {
-    return storageOfAddedMipVariables_.at(PartialKey(component, variable))
-      .at(scenario)
-      .at(timestep);
+    return hmv.at(PartialKey(component, variable)).at(scenario).at(timestep);
 }
 
 VariableDictionary::Value& VariableDictionary::operator()(const std::string& component,
                                                           const std::string& variable,
-                                                          const MCYearAndTime::MCYear& scenario,
+                                                          unsigned int scenario,
                                                           unsigned int timestep)
 {
-    auto&& var = storageOfAddedMipVariables_[PartialKey(component, variable)];
-    return var.at(scenario).at(timestep);
+    return hmv[PartialKey(component, variable)].at(scenario).at(timestep);
 }
 
 VariableDictionary::Value VariableDictionary::operator()(const FullKey& fullKey) const
 {
     return this->operator()(fullKey.getComponent(),
                             fullKey.getVariable(),
-                            fullKey.getScenario().value_or(MCYearAndTime::MCYear{0}),
+                            fullKey.getScenario().value_or(0),
                             fullKey.getTimestep().value_or(0));
 }
 
@@ -231,7 +215,8 @@ VariableDictionary::Value& VariableDictionary::operator()(const FullKey& fullKey
 {
     return this->operator()(fullKey.getComponent(),
                             fullKey.getVariable(),
-                            fullKey.getScenario().value_or(MCYearAndTime::MCYear{0}),
+                            fullKey.getScenario().value_or(0),
                             fullKey.getTimestep().value_or(0));
 }
+
 } // namespace Antares::Optimization

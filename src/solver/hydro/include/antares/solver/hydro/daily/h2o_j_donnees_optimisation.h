@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -21,9 +21,6 @@
 #ifndef __SOLVER_H2O_J_STRUCTURE_INTERNE__
 #define __SOLVER_H2O_J_STRUCTURE_INTERNE__
 
-#include <string>
-#include <vector>
-
 #include <antares/solver/hydro/probleme_spx_wrapper.h>
 
 #ifdef __CPLUSPLUS
@@ -44,6 +41,10 @@ extern "C"
 #define JOURS_30 30
 #define JOURS_31 31
 #define NOMBRE_DE_TYPE_DE_MOIS 4
+
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace DoneesOptimisationJournaliere
 {

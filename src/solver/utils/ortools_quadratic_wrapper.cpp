@@ -27,7 +27,7 @@
 #include <antares/solver/utils/ortools_quadratic_wrapper.h>
 #include <antares/solver/utils/ortools_utils.h>
 
-using Antares::Solver::Optimization::SingleOptimOptions;
+using Antares::Solver::Optimization::OptimizationOptions;
 using namespace operations_research::math_opt;
 
 constexpr double infinity = std::numeric_limits<double>::infinity();
@@ -40,18 +40,18 @@ void BuildConstraints(PROBLEME_ANTARES_A_RESOUDRE* ProblemeAResoudre, Model& mod
 //     Probleme->UtiliserLaToleranceDeStationnariteParDefaut = OUI_PI;
 //     Probleme->UtiliserLaToleranceDeComplementariteParDefaut = OUI_PI;
 
-void checkOptions(const SingleOptimOptions& options)
+void checkOptions(const OptimizationOptions& options)
 {
-    auto availableSolversList = availableQuadraticSolversList();
-    bool solverFound = std::ranges::find(availableSolversList, options.solverName)
+    auto availableSolversList = getAvailableQuadraticSolverNames();
+    bool solverFound = std::ranges::find(availableSolversList, options.quadraticSolver)
                        != availableSolversList.end();
-    if (!solverFound || options.solverName.compare("sirius") == 0)
+    if (!solverFound || options.quadraticSolver.compare("sirius") == 0)
     {
         throw std::invalid_argument(
-          "Solver " + options.solverName
+          "Solver " + options.quadraticSolver
           + " is not supported for quadratic problems optimization through MathOpt.");
     }
-    if (!options.solverParameters.empty())
+    if (!options.quadraticSolverParameters.empty())
     {
         // TODO: handle these by mapping them to generic or solver-specific params in mathopt
         // TODO: or remove this for now?
@@ -64,7 +64,7 @@ void ProcessSolveResult(PROBLEME_ANTARES_A_RESOUDRE* ProblemeAResoudre,
                         Model& model,
                         absl::StatusOr<SolveResult> resultStatus);
 
-void SolveQuadraticProblemWithOrtools(const SingleOptimOptions& options,
+void SolveQuadraticProblemWithOrtools(const OptimizationOptions& options,
                                       PROBLEME_ANTARES_A_RESOUDRE* ProblemeAResoudre)
 {
     checkOptions(options);
@@ -76,7 +76,7 @@ void SolveQuadraticProblemWithOrtools(const SingleOptimOptions& options,
     {
         args.parameters.enable_output = true;
     }
-    auto solverType = OrtoolsUtils::mathoptSolverMap.at(options.solverName);
+    auto solverType = OrtoolsUtils::mathoptSolverMap.at(options.quadraticSolver);
     auto resultStatus = Solve(model, solverType, args);
     ProcessSolveResult(ProblemeAResoudre, model, resultStatus);
 }
@@ -84,14 +84,11 @@ void SolveQuadraticProblemWithOrtools(const SingleOptimOptions& options,
 void BuildVariablesAndObjective(PROBLEME_ANTARES_A_RESOUDRE* ProblemeAResoudre, Model& model)
 {
     QuadraticExpression objective(0);
-    for (int i = 0; i < ProblemeAResoudre->NombreDeVariables; ++i)
+    for (auto i = 0; i < ProblemeAResoudre->NombreDeVariables; ++i)
     {
         double lb, ub;
         switch (ProblemeAResoudre->TypeDeVariable[i])
         {
-        case VARIABLE_FIXE:
-            lb = ub = 0.5 * (ProblemeAResoudre->Xmax[i] + ProblemeAResoudre->Xmin[i]);
-            break;
         case VARIABLE_BORNEE_DES_DEUX_COTES:
             lb = ProblemeAResoudre->Xmin[i];
             ub = ProblemeAResoudre->Xmax[i];
@@ -131,10 +128,10 @@ void BuildConstraints(PROBLEME_ANTARES_A_RESOUDRE* ProblemeAResoudre, Model& mod
         LinearExpression linear_expression(0);
         for (auto iCoef = 0; iCoef < ProblemeAResoudre->NombreDeTermesDesLignes[iCt]; ++iCoef)
         {
-            int iVar = ProblemeAResoudre
-                         ->IndicesColonnes[ProblemeAResoudre->IndicesDebutDeLigne[iCt] + iCoef];
+            int iVar = ProblemeAResoudre->IndicesColonnes
+                         .data()[ProblemeAResoudre->IndicesDebutDeLigne[iCt] + iCoef];
             auto coef = ProblemeAResoudre->CoefficientsDeLaMatriceDesContraintes
-                          [ProblemeAResoudre->IndicesDebutDeLigne[iCt] + iCoef];
+                          .data()[ProblemeAResoudre->IndicesDebutDeLigne[iCt] + iCoef];
             linear_expression += model.variable(iVar) * coef;
         }
         double lb = -infinity;

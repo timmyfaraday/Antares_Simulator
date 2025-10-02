@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -19,31 +19,38 @@
 ** along with Antares_Simulator. If not, see <https://opensource.org/license/mpl-2-0/>.
 */
 #pragma once
+#include "ConstraintBuilder.h"
 
-#include "antares/io/outputs/SimulationTableCsv.h"
-
-namespace Antares::Solver
+struct NetPositionData
 {
-class IResultWriter;
-}
+    std::vector<CORRESPONDANCES_DES_CONTRAINTES>& CorrespondanceCntNativesCntOptim;
+    const std::vector<int>& IndexDebutIntercoOrigine;
+    const std::vector<int>& IndexSuivantIntercoOrigine;
+    const std::vector<int>& IndexDebutIntercoExtremite;
+    const std::vector<int>& IndexSuivantIntercoExtremite;
+};
 
-class OptimisationsSimulationTable
+/*!
+ * represent 'Net Position' constraint type
+ */
+
+class NetPosition: public ConstraintFactory
 {
 public:
-    void clear();
+    NetPosition(ConstraintBuilder& builder, NetPositionData& data):
+        ConstraintFactory(builder),
+        data(data)
+    {
+    }
 
-    std::pair<std::string, std::string> moveBuffers();
+    /*!
+     * @brief Add variables to the constraint and update constraints Matrix
+     * @param pdt : timestep
+     * @param pays : area
+     */
 
-    void write();
-
-    void writeTo(const std::string& filePrefix, Antares::Solver::IResultWriter& writer);
-    ISimulationTable& firstOptimSimulationTable();
-    ISimulationTable& secondOptimSimulationTable();
-    std::string getHeader() const;
+    void add(int pdt, int pays);
 
 private:
-    SimulationTableCsv firstOptimSimulationTable_;
-    SimulationTableCsv secondOptimSimulationTable_;
-    std::string firstOptimBuffer_;
-    std::string secondOptimBuffer_;
+    NetPositionData& data;
 };

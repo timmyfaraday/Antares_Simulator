@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -159,14 +159,14 @@ static void setBoundsForShortTermStorage(PROBLEME_HEBDO* problemeHebdo,
             {
                 const int clusterGlobalIndex = storage.clusterGlobalIndex;
                 auto& STSResult = problemeHebdo->ResultatsHoraires[areaIndex]
-                                    .ShortTermStorage[storageIndex];
+                                    .ShortTermStorage[pdtHebdo];
                 // 1. Injection
                 int varInjection = variableManager.ShortTermStorageInjection(clusterGlobalIndex,
                                                                              pdtJour);
                 Xmin[varInjection] = 0.;
                 Xmax[varInjection] = storage.injectionNominalCapacity
                                      * storage.series->maxInjectionModulation[hourInTheYear];
-                AddressForVars[varInjection] = &STSResult.injection[pdtHebdo];
+                AddressForVars[varInjection] = &STSResult.injection[storageIndex];
 
                 // 2. Withdrwal
                 int varWithdrawal = variableManager.ShortTermStorageWithdrawal(clusterGlobalIndex,
@@ -174,7 +174,7 @@ static void setBoundsForShortTermStorage(PROBLEME_HEBDO* problemeHebdo,
                 Xmin[varWithdrawal] = 0.;
                 Xmax[varWithdrawal] = storage.withdrawalNominalCapacity
                                       * storage.series->maxWithdrawalModulation[hourInTheYear];
-                AddressForVars[varWithdrawal] = &STSResult.withdrawal[pdtHebdo];
+                AddressForVars[varWithdrawal] = &STSResult.withdrawal[storageIndex];
 
                 // 3. Levels
                 int varLevel = variableManager.ShortTermStorageLevel(clusterGlobalIndex, pdtJour);
@@ -190,7 +190,7 @@ static void setBoundsForShortTermStorage(PROBLEME_HEBDO* problemeHebdo,
                     Xmax[varLevel] = storage.reservoirCapacity
                                      * storage.series->upperRuleCurve[hourInTheYear];
                 }
-                AddressForVars[varLevel] = &STSResult.level[pdtHebdo];
+                AddressForVars[varLevel] = &STSResult.level[storageIndex];
                 // 4. Cost Variation Injection
 
                 // is this necessary?
@@ -214,12 +214,6 @@ static void setBoundsForShortTermStorage(PROBLEME_HEBDO* problemeHebdo,
                     Xmin[varCostVariationWithdrawal] = 0.;
                 }
                 storageIndex++;
-                if (storage.allowOverflow)
-                {
-                    int var = variableManager.ShortTermStorageOverflow(clusterGlobalIndex, pdtJour);
-                    Xmin[var] = 0;
-                    Xmax[var] = LINFINI_ANTARES;
-                }
             }
         }
     }
@@ -478,6 +472,14 @@ void OPT_InitialiserLesBornesDesVariablesDuProblemeLineaire(PROBLEME_HEBDO* prob
                 AdresseOuPlacerLaValeurDesVariablesOptimisees[var] = adresseDuResultat;
             }
         }
+        for (uint32_t pays = 0; pays < problemeHebdo->NombreDePays; pays++)
+        {
+            int var = problemeHebdo->CorrespondanceVarNativesVarOptim[pdtHebdo]
+                        .NumeroDeVariableNetPosition[pays];
+            double* adresseDuResultat = &(
+              problemeHebdo->ResultatsHoraires[pays].NetPositionHoraire[pdtHebdo]);
+            AdresseOuPlacerLaValeurDesVariablesOptimisees[var] = adresseDuResultat;
+        }
     }
 
     setBoundsForUnsuppliedEnergy(problemeHebdo,
@@ -498,6 +500,12 @@ void OPT_InitialiserLesBornesDesVariablesDuProblemeLineaire(PROBLEME_HEBDO* prob
                 Xmax[var] = LINFINI_ANTARES;
 
                 AdresseOuPlacerLaValeurDesVariablesOptimisees[var] = nullptr;
+
+                //	Note: if there were a single optimization run instead of two; the following
+                // could be used: 	adresseDuResultat =
+                //&(problemeHebdo->CaracteristiquesHydrauliques[pays].LevelForTimeInterval);
+                //	AdresseOuPlacerLaValeurDesVariablesOptimisees[var] = adresseDuResultat;
+
                 AdresseOuPlacerLaValeurDesCoutsReduits[var] = nullptr;
             }
             for (uint nblayer = 0; nblayer < 100; nblayer++)

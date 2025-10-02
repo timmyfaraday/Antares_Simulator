@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
+ * Copyright 2007-2024, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -110,6 +110,7 @@ private:
     const char** pArgv = nullptr;
 
     // Benchmarking
+    Benchmarking::Timer pTotalTimer;
     Benchmarking::DurationCollector pDurationCollector;
     Benchmarking::OptimizationInfo pOptimizationInfo;
 
@@ -120,12 +121,14 @@ private:
                        Benchmarking::DurationCollector& duration_collector);
 
     void writeComment(Data::Study& study);
-    void readStudy_makeChecks_and_printThings(Data::StudyLoadOptions& options);
+    void startSimulation(Data::StudyLoadOptions& options);
     // Return false if the user requested the version ,available solvers, etc, true otherwise
     bool handleOptions(const Data::StudyLoadOptions& options);
     // Return false if the user requested help, true otherwise
     bool parseCommandLine(Data::StudyLoadOptions& options);
+    void handleParserReturn(Yuni::GetOpt::Parser* parser);
     void postParametersChecks() const;
+
 }; // class Application
 
 } // namespace Antares::Solver

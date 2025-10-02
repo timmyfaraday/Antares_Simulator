@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
+ * Copyright 2007-2024, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -21,7 +21,9 @@
 
 #pragma once
 
-#include <map>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 #include <antares/solver/optim-model-filler/LinearExpression.h>
 #include "antares/optimisation/linear-problem-api/ILinearProblemData.h"
@@ -31,7 +33,7 @@ namespace Antares::Optimization
 using LinearExpressionMap = std::map<unsigned int, LinearExpression>;
 
 // time dependent parameter
-class TimeDependentLinearExpression final
+class TimeDependentLinearExpression
 {
 public:
     explicit TimeDependentLinearExpression(
@@ -41,25 +43,11 @@ public:
     explicit TimeDependentLinearExpression(
       const Optimisation::LinearProblemApi::FillContext& fillContext,
       const LinearExpression& linearExpression);
-
-    explicit TimeDependentLinearExpression(
-      const Optimisation::LinearProblemApi::FillContext& fillContext,
-      LinearExpressionMap linearExpressions);
-
-    explicit TimeDependentLinearExpression(
-      const TimeDependentLinearExpression& timeDependentLinearExpression)
-      = default;
-
-    TimeDependentLinearExpression(TimeDependentLinearExpression&& other) noexcept = default;
-    TimeDependentLinearExpression& operator=(TimeDependentLinearExpression&& other) = delete;
+    explicit TimeDependentLinearExpression(const LinearExpressionMap& linearExpressions);
 
     /// Sum two linear expressions
-    [[deprecated("Will make a potentially expensive copy of a TimeDependentLinearExpression. Use "
-                 "operator+= if possible.")]]
     TimeDependentLinearExpression operator+(const TimeDependentLinearExpression& other) const;
     /// Subtract two linear expressions
-    [[deprecated("Will make a potentially expensive copy of a TimeDependentLinearExpression. Use "
-                 "operator-= if possible.")]]
     TimeDependentLinearExpression operator-(const TimeDependentLinearExpression& other) const;
     /// Multiply two linear expressions
     /// Only one can have non-zero coefficients, otherwise the result cannot be linear
@@ -77,10 +65,8 @@ public:
     const LinearExpressionMap& GetLinearExpressions() const;
     size_t getSize() const;
     TimeDependentLinearExpression& operator+=(const TimeDependentLinearExpression& other);
-    TimeDependentLinearExpression& operator-=(const TimeDependentLinearExpression& other);
 
 private:
     LinearExpressionMap linearExpressions_;
-    const Optimisation::LinearProblemApi::FillContext& fillContext_;
 };
 } // namespace Antares::Optimization

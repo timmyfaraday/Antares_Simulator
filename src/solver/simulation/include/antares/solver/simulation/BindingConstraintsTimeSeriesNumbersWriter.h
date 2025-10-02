@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
+ * Copyright 2007-2024, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include <antares/writer/i_writer.h>
 #include "antares/study/binding_constraint/BindingConstraintsRepository.h"
 
@@ -28,7 +30,7 @@
 
 namespace Antares::Solver::Simulation
 {
-class BindingConstraintsTimeSeriesNumbersWriter final: public ITimeSeriesNumbersWriter
+class BindingConstraintsTimeSeriesNumbersWriter: public ITimeSeriesNumbersWriter
 {
 public:
     explicit BindingConstraintsTimeSeriesNumbersWriter(IResultWriter& resultWriter);

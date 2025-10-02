@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
+ * Copyright 2007-2024, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -21,10 +21,6 @@
 
 #include "antares/solver/lps/LpsFromAntares.h"
 
-#include <fmt/format.h>
-
-#include "antares/exception/RuntimeError.hpp"
-
 namespace Antares::Solver
 {
 bool LpsFromAntares::empty() const
@@ -37,9 +33,9 @@ void LpsFromAntares::setConstantData(const ConstantDataFromAntares& data)
     constantProblemData = data;
 }
 
-void LpsFromAntares::addWeeklyData(WeeklyProblemId id, WeeklyDataFromAntares&& data)
+void LpsFromAntares::addWeeklyData(WeeklyProblemId id, const WeeklyDataFromAntares& data)
 {
-    weeklyProblems.emplace(id, std::move(data));
+    weeklyProblems.emplace(id, data);
 }
 
 const WeeklyDataFromAntares& LpsFromAntares::weeklyData(WeeklyProblemId id) const
@@ -47,10 +43,7 @@ const WeeklyDataFromAntares& LpsFromAntares::weeklyData(WeeklyProblemId id) cons
     auto it = weeklyProblems.find(id);
     if (it == weeklyProblems.end())
     {
-        throw Antares::Error::RuntimeError(
-          fmt::format("No data for the requested weekly problem: year {},  week {}",
-                      id.year,
-                      id.week));
+        return WeeklyDataFromAntares(); // TODO Better error handling
     }
     return it->second;
 }

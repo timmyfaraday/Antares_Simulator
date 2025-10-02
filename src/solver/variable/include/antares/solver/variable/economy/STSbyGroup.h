@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -20,7 +20,6 @@
 */
 #pragma once
 
-#include <antares/utils/utils.h>
 #include "antares/solver/variable/variable.h"
 
 namespace
@@ -34,6 +33,18 @@ inline std::vector<std::string> sortedUniqueGroups(
         names.insert(cluster.properties.groupName);
     }
     return {names.begin(), names.end()};
+}
+
+inline std::map<std::string, unsigned int> giveNumbersToGroups(
+  const std::vector<std::string>& groupNames)
+{
+    unsigned int groupNumber{0};
+    std::map<std::string, unsigned int> groupToNumbers;
+    for (const auto& name: groupNames)
+    {
+        groupToNumbers[name] = groupNumber++;
+    }
+    return groupToNumbers;
 }
 } // namespace
 
@@ -154,7 +165,7 @@ public:
 
         // Building the vector of group names the clusters belong to.
         groupNames_ = sortedUniqueGroups(area->shortTermStorage.storagesByIndex);
-        groupToNumbers_ = Utils::giveNumbersToStrings(groupNames_);
+        groupToNumbers_ = giveNumbersToGroups(groupNames_);
 
         nbColumns_ = groupNames_.size() * NB_COLS_PER_GROUP;
 
@@ -236,15 +247,24 @@ public:
         NextType::yearEnd(year, numSpace);
     }
 
-    void computeSummary(unsigned int year, unsigned int numSpace)
+    void computeSummary(std::map<unsigned int, unsigned int>& numSpaceToYear,
+                        unsigned int nbYearsForCurrentSummary)
     {
-        // Merge all those values with the global results
-        VariableAccessorType::ComputeSummary(pValuesForTheCurrentYear[numSpace],
-                                             AncestorType::pResults,
-                                             year);
+        // Here we compute synthesis :
+        //  for each interval of any time period results (hourly, daily, weekly, ...),
+        //  we compute the average over all MC years :
+        //  For instance :
+        //      - we compute the average of the results of the first hour over all MC years
+        //      - or we compute the average of the results of the n-th day over all MC years
+        for (unsigned int numSpace = 0; numSpace < nbYearsForCurrentSummary; ++numSpace)
+        {
+            VariableAccessorType::ComputeSummary(pValuesForTheCurrentYear[numSpace],
+                                                 AncestorType::pResults,
+                                                 numSpaceToYear[numSpace]);
+        }
 
         // Next variable
-        NextType::computeSummary(year, numSpace);
+        NextType::computeSummary(numSpaceToYear, nbYearsForCurrentSummary);
     }
 
     void hourBegin(unsigned int hourInTheYear)
@@ -258,24 +278,24 @@ public:
         const auto& shortTermStorage = state.area->shortTermStorage;
 
         uint clusterIndex = 0;
-        for (const auto& sts: shortTermStorage.storagesByIndex)
+        for (const auto& cluster: shortTermStorage.storagesByIndex)
         {
-            unsigned int groupNumber = groupToNumbers_[sts.properties.groupName];
-            const auto& result = state.hourlyResults->ShortTermStorage[clusterIndex];
+            unsigned int groupNumber = groupToNumbers_[cluster.properties.groupName];
+            const auto& result = state.hourlyResults->ShortTermStorage[state.hourInTheWeek];
             // Injection
             pValuesForTheCurrentYear[numSpace][NB_COLS_PER_GROUP * groupNumber
                                                + VariableType::injection][state.hourInTheYear]
-              += result.injection[state.hourInTheWeek];
+              += result.injection[clusterIndex];
 
             // Withdrawal
             pValuesForTheCurrentYear[numSpace][NB_COLS_PER_GROUP * groupNumber
                                                + VariableType::withdrawal][state.hourInTheYear]
-              += result.withdrawal[state.hourInTheWeek];
+              += result.withdrawal[clusterIndex];
 
             // Levels
             pValuesForTheCurrentYear[numSpace][NB_COLS_PER_GROUP * groupNumber
                                                + VariableType::level][state.hourInTheYear]
-              += result.level[state.hourInTheWeek];
+              += result.level[clusterIndex];
 
             clusterIndex++;
         }

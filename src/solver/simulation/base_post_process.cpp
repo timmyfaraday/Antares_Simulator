@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -45,8 +45,10 @@ std::unique_ptr<interfacePostProcessList> interfacePostProcessList::create(
   PROBLEME_HEBDO* problemeHebdo,
   uint numSpace,
   AreaList& areas,
-  const Data::Parameters& params,
-  Calendar& calendar)
+  SheddingPolicy sheddingPolicy,
+  SimplexOptimization splxOptimization,
+  Calendar& calendar,
+  const OptimizationOptions& solverOptions)
 {
     if (adqPatchParams.enabled)
     {
@@ -54,15 +56,18 @@ std::unique_ptr<interfacePostProcessList> interfacePostProcessList::create(
                                                          problemeHebdo,
                                                          numSpace,
                                                          areas,
-                                                         params,
-                                                         calendar);
+                                                         sheddingPolicy,
+                                                         splxOptimization,
+                                                         calendar,
+                                                         solverOptions);
     }
     else
     {
         return std::make_unique<OptPostProcessList>(problemeHebdo,
                                                     numSpace,
                                                     areas,
-                                                    params,
+                                                    sheddingPolicy,
+                                                    splxOptimization,
                                                     calendar);
     }
 }

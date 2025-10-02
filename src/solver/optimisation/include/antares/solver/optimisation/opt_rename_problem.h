@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -99,7 +99,6 @@ public:
     void ShortTermStorageInjection(unsigned int variable, const std::string& shortTermStorageName);
     void ShortTermStorageWithdrawal(unsigned int variable, const std::string& shortTermStorageName);
     void ShortTermStorageLevel(unsigned int variable, const std::string& shortTermStorageName);
-    void ShortTermStorageOverflow(unsigned int variable, const std::string& shortTermStorageName);
     void ShortTermStorageCostVariationInjection(unsigned int variable,
                                                 const std::string& shortTermStorageName);
     void ShortTermStorageCostVariationWithdrawal(unsigned int variable,
@@ -115,6 +114,7 @@ public:
     void PositiveUnsuppliedEnergy(unsigned int variable);
     void NegativeUnsuppliedEnergy(unsigned int variable);
     void AreaBalance(unsigned int variable);
+    void NetPosition(unsigned int variable);
 
 private:
     void SetAreaVariableName(unsigned int variable,
@@ -134,6 +134,7 @@ public:
                           const std::string& origin,
                           const std::string& destination);
 
+    void NetPosition(unsigned int variable);
     void AreaBalance(unsigned int constraint);
     void FictiveLoads(unsigned int constraint);
     void HydroPower(unsigned int constraint);

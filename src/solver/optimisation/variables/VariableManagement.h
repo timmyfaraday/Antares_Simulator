@@ -8,7 +8,7 @@ namespace VariableManagement
 /*!
 Factory class that hold variables indices
 */
-class VariableManager final
+class VariableManager
 {
 public:
     VariableManager(std::vector<CORRESPONDANCES_DES_VARIABLES>& CorrespondanceVarNativesVarOptim,
@@ -66,12 +66,6 @@ public:
                                unsigned int hourInWeek,
                                int offset = 0,
                                int delta = 0);
-
-    int& ShortTermStorageOverflow(unsigned int index,
-                                  unsigned int hourInWeek,
-                                  int offset = 0,
-                                  int delta = 0);
-
     int& ShortTermStorageCostVariationInjection(unsigned int index,
                                                 unsigned int hourInWeek,
                                                 int offset = 0,
@@ -80,6 +74,8 @@ public:
                                                  unsigned int hourInWeek,
                                                  int offset = 0,
                                                  int delta = 0);
+
+    int& NetPosition(unsigned int index, unsigned int hourInWeek, int offset = 0, int delta = 0);
 
     int& HydProd(unsigned int index, unsigned int hourInWeek, int offset = 0, int delta = 0);
 
@@ -107,7 +103,7 @@ public:
                                   int offset = 0,
                                   int delta = 0);
 
-private:
+public:
     std::vector<CORRESPONDANCES_DES_VARIABLES>& CorrespondanceVarNativesVarOptim_;
     std::vector<int>& NumeroDeVariableStockFinal_;
     std::vector<std::vector<int>>& NumeroDeVariableDeTrancheDeStock_;

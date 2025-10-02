@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
+ * Copyright 2007-2024, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -22,8 +22,6 @@
 #define __SOLVER_SIMULATION_ADEQUACY_H__
 
 #include "antares/infoCollection/StudyInfoCollector.h"
-#include "antares/io/outputs/SimulationTableCsv.h"
-#include "antares/solver/optimisation/OptimisationsSimulationTable.h"
 #include "antares/solver/simulation/common-eco-adq.h"
 #include "antares/solver/simulation/opt_time_writer.h"
 #include "antares/solver/simulation/solver.h" // for definition of type yearRandomNumbers
@@ -31,8 +29,6 @@
 #include "antares/solver/variable/economy/all.h"
 #include "antares/solver/variable/state.h"
 #include "antares/solver/variable/variable.h"
-
-class ISimulationTable;
 
 namespace Antares::Solver::Simulation
 {
@@ -70,7 +66,7 @@ public:
 
 protected:
     void setNbPerformedYearsInParallel(uint nbMaxPerformedYearsInParallel);
-    std::string getSimulationTableHeader() const;
+
     bool simulationBegin();
 
     bool year(Progression::Task& progression,
@@ -78,6 +74,7 @@ protected:
               uint numSpace,
               yearRandomNumbers& randomForYear,
               std::list<uint>& failedWeekList,
+              bool isFirstPerformedYearOfSimulation,
               const HYDRO_VENTILATION_RESULTS&,
               OptimizationStatisticsWriter& optWriter,
               const Antares::Data::Area::ScratchMap& scratchmap);
@@ -93,8 +90,6 @@ protected:
 
     void initializeState(Variable::State& state, uint numSpace);
 
-    OptimisationsSimulationTable& getSimulationTable(uint numSpace);
-
 private:
     bool simplexIsRequired(uint hourInTheYear,
                            uint numSpace,
@@ -108,7 +103,6 @@ private:
     IResultWriter& resultWriter;
 
     std::reference_wrapper<Simulation::ISimulationObserver> simulationObserver_;
-    std::vector<OptimisationsSimulationTable> simulationTables_;
 }; // class Adequacy
 
 } // namespace Antares::Solver::Simulation

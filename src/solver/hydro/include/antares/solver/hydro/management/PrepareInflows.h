@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -30,11 +30,12 @@ class PrepareInflows
 {
 public:
     PrepareInflows(Data::AreaList& areas, const Date::Calendar& calendar);
-    void loadInflows(uint year);
-    //! prepare data for Final reservoir level
-    void changeInflowsToAccommodateFinalLevels(uint year);
+    void Run(uint year);
 
 private:
+    void LoadInflows(uint year);
+    //! prepare data for Final reservoir level
+    void ChangeInflowsToAccommodateFinalLevels(uint year);
     Data::AreaList& areas_;
     const Date::Calendar& calendar_;
 };

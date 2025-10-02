@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -18,16 +18,21 @@
 ** You should have received a copy of the Mozilla Public Licence 2.0
 ** along with Antares_Simulator. If not, see <https://opensource.org/license/mpl-2-0/>.
 */
-#pragma once
+#ifndef __ORTOOLS_WRAPPER__
+#define __ORTOOLS_WRAPPER__
+
+#include <string>
 
 #include <antares/optimization-options/options.h>
-#include <antares/solver/optimisation/opt_structure_probleme_a_resoudre.h>
+
+#include "named_problem.h"
 
 using namespace operations_research;
 
-MPSolver* ORTOOLS_Simplexe(PROBLEME_ANTARES_A_RESOUDRE* problemeHebdo,
+MPSolver* ORTOOLS_Simplexe(Antares::Optimization::PROBLEME_SIMPLEXE_NOMME* Probleme,
                            MPSolver* ProbSpx,
-                           const Antares::Solver::Optimization::SingleOptimOptions& options);
+                           bool keepBasis,
+                           const Antares::Solver::Optimization::OptimizationOptions& options);
 
 void ORTOOLS_ModifierLeVecteurCouts(MPSolver* ProbSpx, const double* costs, int nbVar);
 void ORTOOLS_ModifierLeVecteurSecondMembre(MPSolver* ProbSpx,
@@ -40,3 +45,5 @@ void ORTOOLS_CorrigerLesBornes(MPSolver* ProbSpx,
                                const int* typeVar,
                                int nbVar);
 void ORTOOLS_LibererProbleme(MPSolver* ProbSpx);
+
+#endif

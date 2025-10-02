@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -23,7 +23,7 @@
 #include "antares/solver/optimisation/constraints/constraint_builder_utils.h"
 #include "antares/solver/optimisation/opt_appel_solveur_quadratique.h"
 
-bool OPT_PilotageOptimisationQuadratique(const SingleOptimOptions& options,
+bool OPT_PilotageOptimisationQuadratique(const OptimizationOptions& options,
                                          PROBLEME_HEBDO* problemeHebdo)
 {
     if (!problemeHebdo->LeProblemeADejaEteInstancie)
@@ -41,6 +41,11 @@ bool OPT_PilotageOptimisationQuadratique(const SingleOptimOptions& options,
     {
         for (uint pdtHebdo = 0; pdtHebdo < problemeHebdo->NombreDePasDeTemps; pdtHebdo++)
         {
+#ifdef dbgInfos
+            printf("*********** Optimisation quadratique du pas de temps %ld ***********\n",
+                   pdtHebdo);
+#endif
+
             OPT_InitialiserLesBornesDesVariablesDuProblemeQuadratique(problemeHebdo, pdtHebdo);
 
             OPT_InitialiserLeSecondMembreDuProblemeQuadratique(problemeHebdo, pdtHebdo);

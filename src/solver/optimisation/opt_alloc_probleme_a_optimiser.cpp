@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -65,18 +65,31 @@ void OPT_AllocateFromNumberOfVariableConstraints(PROBLEME_ANTARES_A_RESOUDRE* Pr
 static void optimisationAllocateProblem(PROBLEME_HEBDO* problemeHebdo)
 {
     const auto& ProblemeAResoudre = problemeHebdo->ProblemeAResoudre;
+
     int NombreDePasDeTempsPourUneOptimisation = problemeHebdo
                                                   ->NombreDePasDeTempsPourUneOptimisation;
+
+    logs.info();
+    logs.info()
+      << " Starting Memory Allocation for a Weekly Optimization problem in Canonical form ";
+    logs.info() << " ( Problem Size :" << ProblemeAResoudre->NombreDeVariables << " variables "
+                << ProblemeAResoudre->NombreDeContraintes << " Constraints) ";
 
     OPT_AllocateFromNumberOfVariableConstraints(problemeHebdo->ProblemeAResoudre.get());
 
     int NbIntervalles = problemeHebdo->NombreDePasDeTemps / NombreDePasDeTempsPourUneOptimisation;
 
     ProblemeAResoudre->ProblemesSpx.assign(NbIntervalles, nullptr);
+
+    logs.info();
+    logs.info() << " Status of Preliminary Allocations for Generic Problem Resolution : Successful";
+    logs.info();
 }
 
 void OPT_AllocDuProblemeAOptimiser(PROBLEME_HEBDO* problemeHebdo)
 {
+    problemeHebdo->ProblemeAResoudre = std::make_unique<PROBLEME_ANTARES_A_RESOUDRE>();
+
     OPT_DecompteDesVariablesEtDesContraintesDuProblemeAOptimiser(problemeHebdo);
 
     optimisationAllocateProblem(problemeHebdo);

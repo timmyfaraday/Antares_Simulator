@@ -1,23 +1,23 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
- * See AUTHORS.txt
- * SPDX-License-Identifier: MPL-2.0
- * This file is part of Antares-Simulator,
- * Adequacy and Performance assessment for interconnected energy networks.
- *
- * Antares_Simulator is free software: you can redistribute it and/or modify
- * it under the terms of the Mozilla Public Licence 2.0 as published by
- * the Mozilla Foundation, either version 2 of the License, or
- * (at your option) any later version.
- *
- * Antares_Simulator is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * Mozilla Public Licence 2.0 for more details.
- *
- * You should have received a copy of the Mozilla Public Licence 2.0
- * along with Antares_Simulator. If not, see <https://opensource.org/license/mpl-2-0/>.
- */
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
+** See AUTHORS.txt
+** SPDX-License-Identifier: MPL-2.0
+** This file is part of Antares-Simulator,
+** Adequacy and Performance assessment for interconnected energy networks.
+**
+** Antares_Simulator is free software: you can redistribute it and/or modify
+** it under the terms of the Mozilla Public Licence 2.0 as published by
+** the Mozilla Foundation, either version 2 of the License, or
+** (at your option) any later version.
+**
+** Antares_Simulator is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+** Mozilla Public Licence 2.0 for more details.
+**
+** You should have received a copy of the Mozilla Public Licence 2.0
+** along with Antares_Simulator. If not, see <https://opensource.org/license/mpl-2-0/>.
+*/
 #ifndef __SOLVER_SIMULATION_COMMON_ECONOMY_ADEQUACY_H__
 #define __SOLVER_SIMULATION_COMMON_ECONOMY_ADEQUACY_H__
 
@@ -30,7 +30,11 @@
 #include "antares/solver/variable/economy/dispatchable-generation-margin.h" // for OP.MRG
 #include "antares/solver/variable/variable.h"
 
-namespace Antares::Solver::Simulation
+namespace Antares
+{
+namespace Solver
+{
+namespace Simulation
 {
 // We use the namespace 'economy' here. That means it is mandatory
 // that adequacy has the same variable (to get the same type)
@@ -86,7 +90,8 @@ void ComputeFlowQuad(Data::Study& study,
 */
 void RemixHydroForAllAreas(const Data::AreaList& areas,
                            PROBLEME_HEBDO& problem,
-                           const Data::Parameters& params,
+                           Data::SheddingPolicy sheddingPolicy,
+                           Data::SimplexOptimization splxOptimization,
                            uint numSpace,
                            uint hourInYear);
 
@@ -130,6 +135,10 @@ int retrieveAverageNTC(const Data::Study& study,
 void finalizeOptimizationStatistics(PROBLEME_HEBDO& problem,
                                     Antares::Solver::Variable::State& state);
 
-} // namespace Antares::Solver::Simulation
+OptimizationOptions createOptimizationOptions(const Data::Study& study);
+
+} // namespace Simulation
+} // namespace Solver
+} // namespace Antares
 
 #endif // __SOLVER_SIMULATION_COMMON_ECONOMY_ADEQUACY_H__

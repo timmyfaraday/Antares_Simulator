@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -31,7 +31,7 @@
 #include "../variables/VariableManagement.h"
 
 // TODO God struct should be decomposed
-class ConstraintBuilderData final
+class ConstraintBuilderData
 {
 public:
     std::vector<double>& Pi;
@@ -39,8 +39,8 @@ public:
     int& nombreDeContraintes;
     int& nombreDeTermesDansLaMatriceDeContrainte;
     std::vector<int>& IndicesDebutDeLigne;
-    std::vector<double>& CoefficientsDeLaMatriceDesContraintes;
-    std::vector<int>& IndicesColonnes;
+    SparseVector<double>& CoefficientsDeLaMatriceDesContraintes;
+    SparseVector<int>& IndicesColonnes;
     std::vector<int>& NombreDeTermesDesLignes;
     std::string& Sens;
     int& IncrementDAllocationMatriceDesContraintes;
@@ -49,6 +49,7 @@ public:
     std::vector<int>& NumeroDeVariableStockFinal;
     std::vector<std::vector<int>>& NumeroDeVariableDeTrancheDeStock;
     std::vector<std::string>& NomDesContraintes;
+    const bool& NamedProblems;
     const std::vector<const char*>& NomsDesPays;
     const uint32_t& weekInTheYear;
     const uint32_t& NombreDePasDeTemps;
@@ -66,7 +67,7 @@ ex: calling NTCDirect() implies adding Direct NTC Variable to the current Constr
 finally the build() method gather all variables and put them into the matrix
 \endverbatim
 */
-class ConstraintBuilder final
+class ConstraintBuilder
 {
 public:
     ConstraintBuilder() = delete;
@@ -127,12 +128,6 @@ public:
                                              double coeff,
                                              int offset = 0,
                                              int delta = 0);
-
-    ConstraintBuilder& ShortTermStorageOverflow(unsigned int index,
-                                                double coeff,
-                                                int offset = 0,
-                                                int delta = 0);
-
     ConstraintBuilder& ShortTermCostVariationInjection(unsigned int index,
                                                        double coeff,
                                                        int offset = 0,
@@ -141,6 +136,8 @@ public:
                                                         double coeff,
                                                         int offset = 0,
                                                         int delta = 0);
+
+    ConstraintBuilder& NetPosition(unsigned int index, double coeff);
 
     ConstraintBuilder& HydProd(unsigned int index, double coeff);
 
@@ -164,7 +161,7 @@ public:
 
     //@}
 
-    class ConstraintBuilderInvalidOperator final: public std::runtime_error
+    class ConstraintBuilderInvalidOperator: public std::runtime_error
     {
     public:
         using std::runtime_error::runtime_error;
@@ -280,7 +277,7 @@ inline void ExportPaliers(const PALIERS_THERMIQUES& PaliersThermiquesDuPays,
     }
 }
 
-class BindingConstraintData final
+class BindingConstraintData
 {
 public:
     const char& TypeDeContrainteCouplante;

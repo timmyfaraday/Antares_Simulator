@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
+ * Copyright 2007-2024, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -18,23 +18,35 @@
  * You should have received a copy of the Mozilla Public Licence 2.0
  * along with Antares_Simulator. If not, see <https://opensource.org/license/mpl-2-0/>.
  */
-
 #pragma once
 
-#include <mutex>
+#include <memory>
+#include <string>
 #include <vector>
 
-namespace Antares::Solver::Simulation
-{
-class NumSpaceManager final
+class NameTranslator
 {
 public:
-    explicit NumSpaceManager(unsigned N);
-    unsigned getAvailableNumSpace();
-    void freeNumSpace(unsigned numSpace);
+    virtual ~NameTranslator() = default;
+    virtual char** translate(const std::vector<std::string>& src, std::vector<char*>& pointerVec)
+      = 0;
+    static std::unique_ptr<NameTranslator> create(bool useRealNames);
+};
+
+class RealName: public NameTranslator
+{
+public:
+    ~RealName() override = default;
 
 private:
-    std::mutex mut;
-    std::vector<bool> available;
+    char** translate(const std::vector<std::string>& src, std::vector<char*>& pointerVec) override;
 };
-} // namespace Antares::Solver::Simulation
+
+class NullName: public NameTranslator
+{
+public:
+    ~NullName() override = default;
+
+private:
+    char** translate(const std::vector<std::string>& src, std::vector<char*>& pointerVec) override;
+};

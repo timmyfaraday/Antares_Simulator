@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -46,6 +46,12 @@ ConstraintBuilder& ConstraintBuilder::DispatchableProduction(unsigned int index,
                                                              int delta)
 {
     AddVariable(variableManager_.DispatchableProduction(index, hourInWeek_, offset, delta), coeff);
+    return *this;
+}
+
+ConstraintBuilder& ConstraintBuilder::NetPosition(unsigned int index, double coeff)
+{
+    AddVariable(variableManager_.NetPosition(index, hourInWeek_), coeff);
     return *this;
 }
 
@@ -123,16 +129,6 @@ ConstraintBuilder& ConstraintBuilder::ShortTermStorageLevel(unsigned int index,
                                                             int delta)
 {
     AddVariable(variableManager_.ShortTermStorageLevel(index, hourInWeek_, offset, delta), coeff);
-    return *this;
-}
-
-ConstraintBuilder& ConstraintBuilder::ShortTermStorageOverflow(unsigned int index,
-                                                               double coeff,
-                                                               int offset,
-                                                               int delta)
-{
-    AddVariable(variableManager_.ShortTermStorageOverflow(index, hourInWeek_, offset, delta),
-                coeff);
     return *this;
 }
 
@@ -220,16 +216,13 @@ ConstraintBuilder& ConstraintBuilder::LayerStorage(unsigned area, unsigned layer
 
 void ConstraintBuilder::OPT_ChargerLaContrainteDansLaMatriceDesContraintes()
 {
-    auto& term = data.nombreDeTermesDansLaMatriceDeContrainte;
-
-    data.IndicesDebutDeLigne[data.nombreDeContraintes] = term;
-    data.CoefficientsDeLaMatriceDesContraintes.resize(term + nombreDeTermes_);
-    data.IndicesColonnes.resize(term + nombreDeTermes_);
-
+    data.IndicesDebutDeLigne[data.nombreDeContraintes] = data
+                                                           .nombreDeTermesDansLaMatriceDeContrainte;
     for (int i = 0; i < nombreDeTermes_; i++)
     {
-        data.CoefficientsDeLaMatriceDesContraintes[term] = data.Pi[i];
-        data.IndicesColonnes[term] = data.Colonne[i];
+        data.CoefficientsDeLaMatriceDesContraintes[data.nombreDeTermesDansLaMatriceDeContrainte]
+          = data.Pi[i];
+        data.IndicesColonnes[data.nombreDeTermesDansLaMatriceDeContrainte] = data.Colonne[i];
         data.nombreDeTermesDansLaMatriceDeContrainte++;
     }
     data.NombreDeTermesDesLignes[data.nombreDeContraintes] = nombreDeTermes_;

@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -186,17 +186,22 @@ public:
         NextType::yearEnd(year, numSpace);
     }
 
-    void computeSummary(unsigned int year, unsigned int numSpace)
+    void computeSummary(std::map<unsigned int, unsigned int>& numSpaceToYear,
+                        unsigned int nbYearsForCurrentSummary)
     {
-        for (unsigned int clusterIndex = 0; clusterIndex < nbClusters_; ++clusterIndex)
+        for (unsigned int numSpace = 0; numSpace < nbYearsForCurrentSummary; ++numSpace)
         {
-            // Merge all those values with the global results
-            AncestorType::pResults[clusterIndex]
-              .merge(year, pValuesForTheCurrentYear[numSpace][clusterIndex]);
+            for (unsigned int clusterIndex = 0; clusterIndex < nbClusters_; ++clusterIndex)
+            {
+                // Merge all those values with the global results
+                AncestorType::pResults[clusterIndex].merge(
+                  numSpaceToYear[numSpace],
+                  pValuesForTheCurrentYear[numSpace][clusterIndex]);
+            }
         }
 
         // Next variable
-        NextType::computeSummary(year, numSpace);
+        NextType::computeSummary(numSpaceToYear, nbYearsForCurrentSummary);
     }
 
     void hourBegin(unsigned int hourInTheYear)
@@ -211,12 +216,13 @@ public:
         for (uint clusterIndex = 0; clusterIndex != state.area->shortTermStorage.count();
              ++clusterIndex)
         {
-            const auto& stsHourlyResults = state.hourlyResults->ShortTermStorage[clusterIndex];
+            const auto& stsHourlyResults = state.hourlyResults
+                                             ->ShortTermStorage[state.hourInTheWeek];
             // ST storage injection for the current cluster and this hour
             // CashFlow[h] = (withdrawal - injection) * MRG. PRICE
             pValuesForTheCurrentYear[numSpace][clusterIndex].hour[hourInYear]
-              = (stsHourlyResults.withdrawal[state.hourInTheWeek]
-                 - stsHourlyResults.injection[state.hourInTheWeek])
+              = (stsHourlyResults.withdrawal[clusterIndex]
+                 - stsHourlyResults.injection[clusterIndex])
                 * (-state.hourlyResults->CoutsMarginauxHoraires[state.hourInTheWeek]);
             // Note: The marginal price provided by the solver is negative (naming convention).
         }
@@ -253,10 +259,10 @@ public:
 
             // Write the data for the current year
             uint clusterIndex = 0;
-            for (const auto& sts: shortTermStorage.storagesByIndex)
+            for (const auto& cluster: shortTermStorage.storagesByIndex)
             {
                 // Write the data for the current year
-                results.variableCaption = sts.properties.name;
+                results.variableCaption = cluster.properties.name;
                 results.variableUnit = VCardType::Unit();
                 pValuesForTheCurrentYear[numSpace][clusterIndex]
                   .template buildAnnualSurveyReport<VCardType>(results, fileLevel, precision);

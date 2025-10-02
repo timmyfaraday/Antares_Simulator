@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
+ * Copyright 2007-2024, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -248,13 +248,8 @@ int OPT_DecompteDesVariablesEtDesContraintesDuProblemeAOptimiser(PROBLEME_HEBDO*
                     for (const auto& additionalConstraints: storage.additionalConstraints)
                     {
                         ProblemeAResoudre->NombreDeContraintes += additionalConstraints
-                                                                    ->enabledConstraintsCount();
+                                                                    .enabledConstraints();
                     }
-                }
-                if (storage.allowOverflow)
-                {
-                    ProblemeAResoudre->NombreDeVariables += nbSTS
-                                                            * nombreDePasDeTempsPourUneOptimisation;
                 }
             }
         }
@@ -286,6 +281,13 @@ int OPT_DecompteDesVariablesEtDesContraintesDuProblemeAOptimiser(PROBLEME_HEBDO*
             ProblemeAResoudre->NombreDeContraintes += 2; /* Final Stock Level : (1 equivalence cnt +
                                                             1 expression cnt )*/
         }
+    }
+
+    // NetPosition
+    for (uint32_t pays = 0; pays < problemeHebdo->NombreDePays; pays++)
+    {
+        ProblemeAResoudre->NombreDeVariables += nombreDePasDeTempsPourUneOptimisation;
+        ProblemeAResoudre->NombreDeContraintes += nombreDePasDeTempsPourUneOptimisation;
     }
 
     if (problemeHebdo->OptimisationAvecCoutsDeDemarrage)

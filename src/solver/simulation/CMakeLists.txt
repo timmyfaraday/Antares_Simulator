@@ -1,27 +1,31 @@
+# Remix hydro algorithm
+add_library(shave-peaks-by-remix-hydro)
 
-add_subdirectory(remix-storage)
+target_sources(shave-peaks-by-remix-hydro
+        PRIVATE
+        shave-peaks-by-remix-hydro.cpp)
+
+target_include_directories(shave-peaks-by-remix-hydro
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 
 #
 # Simulation
 #
 set(SRC_SIMULATION
-        apply-scenario.cpp
-        include/antares/solver/simulation/apply-scenario.h
+        sim_alloc_probleme_hebdo.cpp
         include/antares/solver/simulation/sim_alloc_probleme_hebdo.h
-        include/antares/solver/simulation/sim_binding_constraints_rhs.h
-        include/antares/solver/simulation/sim_constants.h
+        sim_calcul_economique.cpp
         include/antares/solver/simulation/sim_structure_donnees.h
         include/antares/solver/simulation/sim_structure_probleme_economique.h
+        include/antares/solver/simulation/sim_constants.h
         include/antares/solver/simulation/simulation.h
         include/antares/solver/simulation/solver.h
         include/antares/solver/simulation/solver.hxx
-		include/antares/solver/simulation/numspace_manager.h
-		numspace_manager.cpp
         include/antares/solver/simulation/timeseries-numbers.h
-        sim_alloc_probleme_hebdo.cpp
-        sim_binding_constraints_rhs.cpp
-        sim_calcul_economique.cpp
         timeseries-numbers.cpp
+        include/antares/solver/simulation/apply-scenario.h
+        apply-scenario.cpp
 
 
         # Solver
@@ -29,6 +33,8 @@ set(SRC_SIMULATION
         solver_utils.cpp
         include/antares/solver/simulation/solver.h
         include/antares/solver/simulation/solver.hxx
+        include/antares/solver/simulation/solver.data.h
+        solver.data.cpp
         include/antares/solver/simulation/simulation-run.h
         simulation-run.cpp
         include/antares/solver/simulation/common-eco-adq.h
@@ -79,8 +85,7 @@ target_link_libraries(antares-solver-simulation
         antares-solver-hydro
         antares-solver-variable
         antares-solver-ts-generator
-		shave-peaks-by-remix-storage-gen
-		Antares::modeler-simulation-table
+        shave-peaks-by-remix-hydro
 )
 
 install(DIRECTORY include/antares

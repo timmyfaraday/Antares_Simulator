@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
+ * Copyright 2007-2024, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -20,7 +20,6 @@
  */
 
 #include <cmath>
-#include <fmt/format.h>
 
 #include <antares/antares/fatal-error.h>
 #include <antares/study/study.h>
@@ -58,11 +57,11 @@ static void PreproRoundAllEntriesPlusDerated(Data::Study& study)
       });
 }
 
-bool GenerateHydroTimeSeries(Data::Study& study, Solver::IResultWriter& writer)
+bool GenerateHydroTimeSeries(Data::Study& study, uint currentYear, Solver::IResultWriter& writer)
 {
     logs.info() << "Generating the hydro time-series";
 
-    Solver::Progression::Task progression(study, 0, Solver::Progression::sectTSGHydro);
+    Solver::Progression::Task progression(study, currentYear, Solver::Progression::sectTSGHydro);
 
     auto& studyRTI = study.runtime;
     auto& calendar = study.calendar;
@@ -282,10 +281,10 @@ bool GenerateHydroTimeSeries(Data::Study& study, Solver::IResultWriter& writer)
         {
             logs.info() << "Archiving the hydro time-series";
             study.areas.each(
-              [&writer, &progression](const Data::Area& area)
+              [&currentYear, &writer, &progression](const Data::Area& area)
               {
                   const int precision = 0;
-                  const std::string mcYear = "mc-0";
+                  std::string mcYear = "mc-" + currentYear;
                   fs::path outputFolder = fs::path("ts-generator") / "hydro" / mcYear
                                           / area.id.to<std::string>();
 

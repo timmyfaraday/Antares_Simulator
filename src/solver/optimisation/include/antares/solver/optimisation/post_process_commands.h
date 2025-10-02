@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -24,12 +24,12 @@
 
 namespace Antares::Solver::Simulation
 {
-class DispatchableMarginPostProcessCmd final: public basePostProcessCommand
+class DispatchableMarginPostProcessCmd: public basePostProcessCommand
 {
 public:
     DispatchableMarginPostProcessCmd(PROBLEME_HEBDO* problemeHebdo,
                                      unsigned int numSpace,
-                                     AreaList& areas);
+                                     const AreaList& areas);
     void execute(const optRuntimeData& opt_runtime_data) override;
 
 private:
@@ -37,22 +37,24 @@ private:
     const AreaList& area_list_;
 };
 
-class RemixHydroPostProcessCmd final: public basePostProcessCommand
+class RemixHydroPostProcessCmd: public basePostProcessCommand
 {
 public:
     RemixHydroPostProcessCmd(PROBLEME_HEBDO* problemeHebdo,
                              AreaList& areas,
-                             const Data::Parameters& params,
+                             SheddingPolicy sheddingPolicy,
+                             SimplexOptimization simplexOptimization,
                              unsigned int numSpace);
     void execute(const optRuntimeData& opt_runtime_data) override;
 
 private:
     const AreaList& area_list_;
     unsigned int numSpace_ = 0;
-    const Data::Parameters& params_;
+    SheddingPolicy shedding_policy_;
+    SimplexOptimization splx_optimization_;
 };
 
-class UpdateMrgPriceAfterCSRcmd final: public basePostProcessCommand
+class UpdateMrgPriceAfterCSRcmd: public basePostProcessCommand
 {
 public:
     UpdateMrgPriceAfterCSRcmd(PROBLEME_HEBDO* problemeHebdo,
@@ -65,7 +67,7 @@ private:
     unsigned int numSpace_ = 0;
 };
 
-class DTGnettingAfterCSRcmd final: public basePostProcessCommand
+class DTGnettingAfterCSRcmd: public basePostProcessCommand
 {
 public:
     DTGnettingAfterCSRcmd(PROBLEME_HEBDO* problemeHebdo, AreaList& areas, unsigned int numSpace);
@@ -76,7 +78,7 @@ private:
     unsigned int numSpace_ = 0;
 };
 
-class InterpolateWaterValuePostProcessCmd final: public basePostProcessCommand
+class InterpolateWaterValuePostProcessCmd: public basePostProcessCommand
 {
 public:
     InterpolateWaterValuePostProcessCmd(PROBLEME_HEBDO* problemeHebdo,
@@ -90,7 +92,7 @@ private:
     const Date::Calendar& calendar_;
 };
 
-class HydroLevelsFinalUpdatePostProcessCmd final: public basePostProcessCommand
+class HydroLevelsFinalUpdatePostProcessCmd: public basePostProcessCommand
 {
 public:
     HydroLevelsFinalUpdatePostProcessCmd(PROBLEME_HEBDO* problemeHebdo, AreaList& areas);
@@ -101,7 +103,7 @@ private:
     const AreaList& area_list_;
 };
 
-class CurtailmentSharingPostProcessCmd final: public basePostProcessCommand
+class CurtailmentSharingPostProcessCmd: public basePostProcessCommand
 {
 public:
     CurtailmentSharingPostProcessCmd(const AdqPatchParams& adqPatchParams,

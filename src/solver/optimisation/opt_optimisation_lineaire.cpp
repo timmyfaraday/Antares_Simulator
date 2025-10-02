@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
+ * Copyright 2007-2024, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -19,23 +19,18 @@
  * along with Antares_Simulator. If not, see <https://opensource.org/license/mpl-2-0/>.
  */
 
-#include <mutex>
-
 #include <antares/logs/logs.h>
-#include "antares/io/outputs/ISimulationTable.h"
 #include "antares/solver/optimisation/LinearProblemMatrix.h"
-#include "antares/solver/optimisation/OptimisationsSimulationTable.h"
 #include "antares/solver/optimisation/constraints/constraint_builder_utils.h"
 #include "antares/solver/optimisation/opt_export_structure.h"
 #include "antares/solver/optimisation/opt_fonctions.h"
 #include "antares/solver/simulation/ISimulationObserver.h"
 #include "antares/solver/simulation/sim_structure_probleme_economique.h"
 #include "antares/solver/utils/filename.h"
+#include "antares/solver/optimisation/run-thermal-heuristic.h"
 
 using namespace Antares::Solver;
 using Antares::Solver::Optimization::OptimizationOptions;
-
-std::once_flag export_once;
 
 namespace
 {
@@ -118,12 +113,11 @@ void notifyProblemHebdo(const PROBLEME_HEBDO* problemeHebdo,
 }
 } // namespace
 
-bool runWeeklyOptimization(const SingleOptimOptions& options,
+bool runWeeklyOptimization(const OptimizationOptions& options,
                            PROBLEME_HEBDO* problemeHebdo,
                            Solver::IResultWriter& writer,
                            int optimizationNumber,
-                           Solver::Simulation::ISimulationObserver& simulationObserver,
-                           ISimulationTable& simulationTable)
+                           Solver::Simulation::ISimulationObserver& simulationObserver)
 {
     const int NombreDePasDeTempsPourUneOptimisation = problemeHebdo
                                                         ->NombreDePasDeTempsPourUneOptimisation;
@@ -169,14 +163,12 @@ bool runWeeklyOptimization(const SingleOptimOptions& options,
                                  numeroDeLIntervalle,
                                  optimizationNumber,
                                  *optPeriodStringGenerator,
-                                 writer,
-                                 simulationTable))
+                                 writer))
         {
             return false;
         }
 
-        if (problemeHebdo->ExportMPS != Data::mpsExportStatus::NO_EXPORT
-            || problemeHebdo->Expansion)
+        if (problemeHebdo->ExportMPS != Data::mpsExportStatus::NO_EXPORT)
         {
             double optimalSolutionCost = OPT_ObjectiveFunctionResult(problemeHebdo,
                                                                      numeroDeLIntervalle,
@@ -197,17 +189,17 @@ bool runWeeklyOptimization(const SingleOptimOptions& options,
     return true;
 }
 
-void runThermalHeuristic(PROBLEME_HEBDO* problemeHebdo)
-{
-    if (problemeHebdo->OptimisationAvecCoutsDeDemarrage)
-    {
-        OPT_AjusterLeNombreMinDeGroupesDemarresCoutsDeDemarrage(problemeHebdo);
-    }
-    else
-    {
-        OPT_CalculerLesPminThermiquesEnFonctionDeMUTetMDT(problemeHebdo);
-    }
-}
+// void runThermalHeuristic(PROBLEME_HEBDO* problemeHebdo)
+// {
+//     if (problemeHebdo->OptimisationAvecCoutsDeDemarrage)
+//     {
+//         OPT_AjusterLeNombreMinDeGroupesDemarresCoutsDeDemarrage(problemeHebdo);
+//     }
+//     else
+//     {
+//         OPT_CalculerLesPminThermiquesEnFonctionDeMUTetMDT(problemeHebdo);
+//     }
+// }
 
 void resizeProbleme(PROBLEME_ANTARES_A_RESOUDRE* ProblemeAResoudre,
                     unsigned nombreDeVariables,
@@ -239,8 +231,7 @@ void resizeProbleme(PROBLEME_ANTARES_A_RESOUDRE* ProblemeAResoudre,
 bool OPT_OptimisationLineaire(const OptimizationOptions& options,
                               PROBLEME_HEBDO* problemeHebdo,
                               Solver::IResultWriter& writer,
-                              Solver::Simulation::ISimulationObserver& simulationObserver,
-                              OptimisationsSimulationTable& simulationTables)
+                              Solver::Simulation::ISimulationObserver& simulationObserver)
 {
     if (!problemeHebdo->OptimisationAuPasHebdomadaire)
     {
@@ -267,19 +258,16 @@ bool OPT_OptimisationLineaire(const OptimizationOptions& options,
     resizeProbleme(problemeHebdo->ProblemeAResoudre.get(),
                    problemeHebdo->ProblemeAResoudre->NombreDeVariables,
                    problemeHebdo->ProblemeAResoudre->NombreDeContraintes);
-    if (problemeHebdo->ExportStructure)
+    if (problemeHebdo->ExportStructure && problemeHebdo->firstWeekOfSimulation)
     {
-        std::call_once(export_once,
-                       [&problemeHebdo, &writer]()
-                       { OPT_ExportStructures(problemeHebdo, writer); });
+        OPT_ExportStructures(problemeHebdo, writer);
     }
 
-    bool ret = runWeeklyOptimization(options.firstOptimOptions,
+    bool ret = runWeeklyOptimization(options,
                                      problemeHebdo,
                                      writer,
                                      PREMIERE_OPTIMISATION,
-                                     simulationObserver,
-                                     simulationTables.firstOptimSimulationTable());
+                                     simulationObserver);
 
     // We only need the 2nd optimization when NOT solving with integer variables
     // We also skip the 2nd optimization in the hidden 'Expansion' mode
@@ -288,12 +276,11 @@ bool OPT_OptimisationLineaire(const OptimizationOptions& options,
     {
         // We need to adjust some stuff before running the 2nd optimisation
         runThermalHeuristic(problemeHebdo);
-        return runWeeklyOptimization(options.secondOptimOptions,
+        return runWeeklyOptimization(options,
                                      problemeHebdo,
                                      writer,
                                      DEUXIEME_OPTIMISATION,
-                                     simulationObserver,
-                                     simulationTables.secondOptimSimulationTable());
+                                     simulationObserver);
     }
     return ret;
 }

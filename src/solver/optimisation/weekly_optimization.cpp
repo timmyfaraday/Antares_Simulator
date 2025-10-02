@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
+ * Copyright 2007-2024, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -28,23 +28,17 @@ namespace Antares::Solver::Optimization
 WeeklyOptimization::WeeklyOptimization(const OptimizationOptions& options,
                                        PROBLEME_HEBDO* problemeHebdo,
                                        IResultWriter& writer,
-                                       Simulation::ISimulationObserver& simulationObserver,
-                                       OptimisationsSimulationTable& simulationTables):
+                                       Simulation::ISimulationObserver& simulationObserver):
     options_(options),
     problemeHebdo_(problemeHebdo),
     writer_(writer),
-    simulationObserver_(simulationObserver),
-    simulationTables_(simulationTables)
+    simulationObserver_(simulationObserver)
 {
 }
 
 void WeeklyOptimization::solve()
 {
-    OPT_OptimisationHebdomadaireLineaire(options_,
-                                         problemeHebdo_,
-                                         writer_,
-                                         simulationObserver_.get(),
-                                         simulationTables_);
+    OPT_OptimisationHebdomadaire(options_, problemeHebdo_, writer_, simulationObserver_.get());
 }
 
 } // namespace Antares::Solver::Optimization

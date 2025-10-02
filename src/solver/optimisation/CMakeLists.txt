@@ -6,6 +6,7 @@ set(RTESOLVER_OPT
         opt_chainage_intercos.cpp
         include/antares/solver/optimisation/opt_fonctions.h
         include/antares/solver/optimisation/opt_appel_solveur_quadratique.h
+        include/antares/solver/optimisation/SparseVector.hxx
         opt_pilotage_optimisation_lineaire.cpp
         opt_pilotage_optimisation_quadratique.cpp
         include/antares/solver/optimisation/opt_structure_probleme_a_resoudre.h
@@ -37,6 +38,8 @@ set(RTESOLVER_OPT
         opt_decompte_variables_et_contraintes_couts_demarrage.cpp
         opt_init_minmax_groupes_couts_demarrage.cpp
         opt_nombre_min_groupes_demarres_couts_demarrage.cpp
+        include/antares/solver/optimisation/run-thermal-heuristic.h
+        run-themal-heuristic.cpp
         include/antares/solver/optimisation/opt_export_structure.h
         opt_export_structure.cpp
         include/antares/solver/optimisation/weekly_optimization.h
@@ -75,6 +78,8 @@ set(RTESOLVER_OPT
         include/antares/solver/optimisation/constraints/constraint_builder_utils.h
         include/antares/solver/optimisation/constraints/AreaBalance.h
         constraints/AreaBalance.cpp
+        include/antares/solver/optimisation/constraints/NetPosition.h
+        constraints/NetPosition.cpp
         include/antares/solver/optimisation/constraints/FictitiousLoad.h
         constraints/FictitiousLoad.cpp
         include/antares/solver/optimisation/constraints/ShortTermStorageLevel.h
@@ -180,10 +185,6 @@ set(RTESOLVER_OPT
         include/antares/solver/optimisation/LegacyOrtoolsLinearProblem.h
         include/antares/solver/optimisation/LegacyFiller.h
         LegacyFiller.cpp
-        include/antares/solver/optimisation/ComponentToAreaConnectionFiller.h
-        ComponentToAreaConnectionFiller.cpp
-        include/antares/solver/optimisation/OptimisationsSimulationTable.h
-        OptimisationsSimulationTable.cpp
 )
 
 
@@ -200,7 +201,6 @@ else ()
     #set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS} /wd 4101") # unused local variable
     #set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} /wd 4101") # unused local variable
 endif ()
-
 target_link_libraries(model_antares
         PUBLIC
         Antares::solverUtils
@@ -217,8 +217,6 @@ target_link_libraries(model_antares
         # modeler
         Antares::optim-model-filler
         Antares::antares-study-system-model
-        Antares::modeler-simulation-table
-        Boost::headers
 )
 
 target_include_directories(model_antares

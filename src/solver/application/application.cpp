@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
+ * Copyright 2007-2024, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -29,33 +29,28 @@
 #include <antares/logs/hostinfo.h>
 #include <antares/resources/resources.h>
 #include <antares/study/duplicates.h>
-#include <antares/study/header.h>
 #include <antares/sys/policy.h>
 #include <antares/writer/writer_factory.h>
 #include "antares/antares/version.h"
-#include "antares/checks/checksOnLPsolver.h"
 #include "antares/config/config.h"
-#include "antares/io/outputs/SimulationTableCsv.h"
 #include "antares/signal-handling/public.h"
 #include "antares/solver/misc/system-memory.h"
 #include "antares/solver/misc/write-command-line.h"
 #include "antares/solver/simulation/simulation-run.h"
+#include "antares/solver/simulation/simulation.h"
 #include "antares/solver/simulation/solver.h"
 #include "antares/solver/utils/ortools_utils.h"
+
 using namespace Antares::Check;
 
 namespace fs = std::filesystem;
 
 namespace
 {
-const char totalTimeKey[] = "total";
-
 void printSolvers()
 {
-    std::cout << "Available linear solvers: " << toString(availableLinearSolversList())
-              << std::endl;
-    std::cout << "Available quadratic solvers: " << toString(availableQuadraticSolversList())
-              << std::endl;
+    std::cout << "Available linear solvers: " << availableLinearSolversString() << std::endl;
+    std::cout << "Available quadratic solvers: " << availableQuadraticSolversString() << std::endl;
 }
 } // namespace
 
@@ -153,6 +148,9 @@ void Application::readDataForTheStudy(Data::StudyLoadOptions& options)
         loadingException = std::current_exception();
     }
 
+    // For solver
+    study.parameters.optOptions = options.solverOptions;
+
     // This settings can only be enabled from the solver
     // Prepare the output for the study
     study.prepareOutput();
@@ -237,10 +235,9 @@ void Application::readDataForTheStudy(Data::StudyLoadOptions& options)
     ScenarioBuilderOwner(study).callScenarioBuilder();
 }
 
-// TODO : this function is too long and has a bad name.
-// TODO : we should split it into (at least) 4 functions.
-// TODO : As a consequence, naming will be easier.
-void Application::readStudy_makeChecks_and_printThings(Data::StudyLoadOptions& options)
+// gp : here we don't "start simulation", but we mainly read input data for the simulation to
+// gp : be executed a bit later.
+void Application::startSimulation(Data::StudyLoadOptions& options)
 {
 // Starting !
 #ifdef GIT_SHA1_SHORT_STRING
@@ -284,9 +281,11 @@ void Application::readStudy_makeChecks_and_printThings(Data::StudyLoadOptions& o
 }
 
 void Application::postParametersChecks() const
-{
-    // Some more checks require the existence of pParameters, hence of a study.
+{ // Some more checks require the existence of pParameters, hence of a study.
     // Their execution is delayed up to this point.
+    checkSolverMILPincompatibility(pParameters->unitCommitment.ucMode,
+                                   pParameters->optOptions.linearSolver);
+
     checkSimplexRangeHydroPricing(pParameters->simplexOptimizationRange,
                                   pParameters->hydroPricing.hpMode);
 
@@ -345,29 +344,17 @@ void Application::prepare(int argc, const char* argv[])
         return;
     }
 
-    printPIDtoDisk(pSettings);
-
+    // Perform some checks
     checkAndCorrectSettingsAndOptions(pSettings, options);
 
-    checkStudyFolder(options.studyFolder);
-    pSettings.studyFolder = fixStudyFolder(options.studyFolder);
+    pSettings.checkAndSetStudyFolder(options.studyFolder);
 
-    auto version = Data::StudyHeader::tryToFindTheVersion(pSettings.studyFolder);
-    checkStudyVersion(version, pSettings.studyFolder);
+    checkStudyVersion(pSettings.studyFolder);
 
     // Determine the log filename to use for this simulation
     resetLogFilename();
 
-    readStudy_makeChecks_and_printThings(options);
-
-    // Check solver options
-    const auto& unitCommitmentMode = pParameters->unitCommitment.ucMode;
-    bool milpRequired = (unitCommitmentMode == Data::UnitCommitmentMode::ucMILP);
-
-    checkSolverOptions(options.solverOptions, milpRequired);
-
-    // Set solver options from command line
-    pStudy->parameters.optOptions.initializeWith(options.solverOptions);
+    startSimulation(options);
 }
 
 void Application::onLogMessage(int level, const std::string& /*message*/)
@@ -396,19 +383,17 @@ void Application::execute()
 
     // Save about-the-study files (comments, notes, etc.)
     pStudy->saveAboutTheStudy(*resultWriter);
+
     SystemMemoryLogger memoryReport;
     memoryReport.interval(1000 * 60 * 5); // 5 minutes
     memoryReport.start();
 
     Simulation::NullSimulationObserver observer;
-    pDurationCollector(totalTimeKey) << [&]
-    {
-        pOptimizationInfo = simulationRun(*pStudy,
-                                          pSettings,
-                                          pDurationCollector,
-                                          *resultWriter,
-                                          observer);
-    };
+    pOptimizationInfo = simulationRun(*pStudy,
+                                      pSettings,
+                                      pDurationCollector,
+                                      *resultWriter,
+                                      observer);
 
     // Importing Time-Series if asked
     pStudy->importTimeseriesIntoInput();
@@ -486,7 +471,10 @@ void Application::writeExectutionInfo()
         return;
     }
 
-    logTotalTime(pDurationCollector.getTime(totalTimeKey));
+    pTotalTimer.stop();
+    pDurationCollector.addDuration("total", pTotalTimer.get_duration());
+
+    logTotalTime(pTotalTimer.get_duration());
 
     // If no writer is available, we can't write
     if (!resultWriter)

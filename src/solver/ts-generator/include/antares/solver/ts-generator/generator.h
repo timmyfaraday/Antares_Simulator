@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -69,7 +69,7 @@ struct LinkTSgenerationParams
     bool hasValidData = true;
 };
 
-class AvailabilityTSGeneratorData final
+class AvailabilityTSGeneratorData
 {
 public:
     explicit AvailabilityTSGeneratorData(Data::ThermalCluster*);
@@ -102,7 +102,7 @@ void ResizeGeneratedTimeSeries(Data::AreaList& areas, Data::Parameters& params);
 ** \brief Regenerate the time-series
 */
 template<enum Data::TimeSeriesType T>
-bool GenerateTimeSeries(Data::Study& study, IResultWriter& writer);
+bool GenerateTimeSeries(Data::Study& study, uint year, IResultWriter& writer);
 
 bool generateThermalTimeSeries(Data::Study& study,
                                const std::vector<Data::ThermalCluster*>& clusters,
@@ -127,7 +127,7 @@ void DestroyAll(Data::Study& study);
 ** \brief Destroy a TS generator if it exists and no longer needed
 */
 template<enum Data::TimeSeriesType T>
-void Destroy(Data::Study& study);
+void Destroy(Data::Study& study, uint year);
 
 } // namespace Antares::TSGenerator
 

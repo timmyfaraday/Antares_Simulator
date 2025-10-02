@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
+ * Copyright 2007-2024, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -45,7 +45,7 @@ protected:
     void addStorageConstraint(const std::string& constraintName, int pdt, int pays);
 };
 
-class ShortTermStorageCostVariationInjectionBackward final: ShortTermStorageCostVariation
+class ShortTermStorageCostVariationInjectionBackward: ShortTermStorageCostVariation
 {
 public:
     using ShortTermStorageCostVariation::ShortTermStorageCostVariation;
@@ -59,7 +59,7 @@ public:
     void buildConstraint(int index) override;
 };
 
-class ShortTermStorageCostVariationInjectionForward final: ShortTermStorageCostVariation
+class ShortTermStorageCostVariationInjectionForward: ShortTermStorageCostVariation
 {
 public:
     using ShortTermStorageCostVariation::ShortTermStorageCostVariation;
@@ -73,7 +73,7 @@ public:
     void buildConstraint(int index) override;
 };
 
-class ShortTermStorageCostVariationWithdrawalBackward final: ShortTermStorageCostVariation
+class ShortTermStorageCostVariationWithdrawalBackward: ShortTermStorageCostVariation
 {
 public:
     using ShortTermStorageCostVariation::ShortTermStorageCostVariation;
@@ -87,7 +87,7 @@ public:
     void buildConstraint(int index) override;
 };
 
-class ShortTermStorageCostVariationWithdrawalForward final: ShortTermStorageCostVariation
+class ShortTermStorageCostVariationWithdrawalForward: ShortTermStorageCostVariation
 {
 public:
     using ShortTermStorageCostVariation::ShortTermStorageCostVariation;

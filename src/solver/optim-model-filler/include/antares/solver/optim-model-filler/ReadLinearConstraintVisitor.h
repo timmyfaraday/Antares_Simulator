@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
+ * Copyright 2007-2024, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -51,19 +51,19 @@ struct LinearConstraint
     unsigned int timeStep = 0;
 };
 
-class ReadLinearConstraintVisitor final
+class ReadLinearConstraintVisitor
     : public Expressions::Visitors::NodeVisitor<std::vector<LinearConstraint>>
 {
 public:
-    ReadLinearConstraintVisitor() = delete;
+    ReadLinearConstraintVisitor() = default;
     explicit ReadLinearConstraintVisitor(
-      const Optimisation::EvaluationContextProvider& evalContextProvider,
+      Expressions::Visitors::EvaluationContext context,
       const Optimisation::LinearProblemApi::FillContext& fillContext,
-      const ModelerStudy::SystemModel::Component& component);
-
+      const std::string& componentId /* or vector ?*/);
     std::string name() const override;
 
 private:
+    ReadLinearExpressionVisitor linear_expression_visitor_;
     std::vector<LinearConstraint> visit(const Expressions::Nodes::SumNode* node) override;
     std::vector<LinearConstraint> visit(const Expressions::Nodes::SubtractionNode* node) override;
     std::vector<LinearConstraint> visit(
@@ -80,11 +80,13 @@ private:
     std::vector<LinearConstraint> visit(const Expressions::Nodes::LiteralNode* node) override;
     std::vector<LinearConstraint> visit(const Expressions::Nodes::PortFieldNode* node) override;
     std::vector<LinearConstraint> visit(const Expressions::Nodes::PortFieldSumNode* node) override;
+    std::vector<LinearConstraint> visit(
+      const Expressions::Nodes::ComponentVariableNode* node) override;
+    std::vector<LinearConstraint> visit(
+      const Expressions::Nodes::ComponentParameterNode* node) override;
     std::vector<LinearConstraint> visit(const Expressions::Nodes::TimeShiftNode* node) override;
     std::vector<LinearConstraint> visit(const Expressions::Nodes::TimeIndexNode* node) override;
     std::vector<LinearConstraint> visit(const Expressions::Nodes::TimeSumNode* node) override;
     std::vector<LinearConstraint> visit(const Expressions::Nodes::AllTimeSumNode* node) override;
-
-    ReadLinearExpressionVisitor linear_expression_visitor_;
 };
 } // namespace Antares::Optimization

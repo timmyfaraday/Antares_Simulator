@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
+ * Copyright 2007-2024, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -39,8 +39,7 @@ Economy::Economy(Data::Study& study,
     study(study),
     preproOnly(false),
     resultWriter(resultWriter),
-    simulationObserver_(simulationObserver),
-    simulationTables_(study.maxNbYearsInParallel)
+    simulationObserver_(simulationObserver)
 {
 }
 
@@ -66,20 +65,6 @@ void Economy::initializeState(Variable::State& state, uint numSpace)
     state.numSpace = numSpace;
 }
 
-OptimisationsSimulationTable& Economy::getSimulationTable(uint numSpace)
-{
-    return simulationTables_[numSpace];
-}
-
-std::string Economy::getSimulationTableHeader() const
-{
-    if (!simulationTables_.empty())
-    {
-        return simulationTables_.at(0).getHeader();
-    }
-    return "";
-}
-
 bool Economy::simulationBegin()
 {
     if (!preproOnly)
@@ -95,20 +80,28 @@ bool Economy::simulationBegin()
                                             nbHoursInAWeek,
                                             numSpace);
 
-            weeklyOptProblems_.emplace_back(study.parameters.optOptions,
+            auto options = createOptimizationOptions(study);
+
+            weeklyOptProblems_.emplace_back(options,
                                             &pProblemesHebdo[numSpace],
                                             resultWriter,
-                                            simulationObserver_.get(),
-                                            simulationTables_[numSpace]);
+                                            simulationObserver_.get());
 
             postProcessesList_[numSpace] = interfacePostProcessList::create(
               study.parameters.adqPatchParams,
               &pProblemesHebdo[numSpace],
               numSpace,
               study.areas,
-              study.parameters,
-              study.calendar);
+              study.parameters.shedding.policy,
+              study.parameters.simplexOptimizationRange,
+              study.calendar,
+              study.parameters.optOptions);
         }
+    }
+
+    for (auto& pb: pProblemesHebdo)
+    {
+        pb.TypeDOptimisation = OPTIMISATION_LINEAIRE;
     }
 
     pStartTime = study.calendar.days[study.parameters.simulationDays.first].hours.first;
@@ -121,6 +114,7 @@ bool Economy::year(Progression::Task& progression,
                    uint numSpace,
                    yearRandomNumbers& randomForYear,
                    std::list<uint>& failedWeekList,
+                   bool isFirstPerformedYearOfSimulation,
                    const HYDRO_VENTILATION_RESULTS& hydroVentilationResults,
                    OptimizationStatisticsWriter& optWriter,
                    const Antares::Data::Area::ScratchMap& scratchmap)
@@ -136,10 +130,11 @@ bool Economy::year(Progression::Task& progression,
     state.startANewYear();
 
     int hourInTheYear = pStartTime;
-
-    // In order to avoid slight differences in parallel/sequential, we clear the basis at the start
-    // of each year
-    currentProblem.ProblemeAResoudre->clearBasis();
+    if (isFirstPerformedYearOfSimulation)
+    {
+        currentProblem.firstWeekOfSimulation = true;
+    }
+    bool reinitOptim = true;
 
     for (uint w = 0; w != pNbWeeks; ++w)
     {
@@ -159,13 +154,20 @@ bool Economy::year(Progression::Task& progression,
                                         hourInTheYear,
                                         randomForYear.pThermalNoisesByArea,
                                         state.year);
-        auto& currentSimTable = simulationTables_[numSpace];
+
+        // Reinit optimisation if needed
+        currentProblem.ReinitOptimisation = reinitOptim;
+        reinitOptim = false;
+
         try
         {
             weeklyOptProblems_[numSpace].solve();
-            currentSimTable.write();
+
             // Runs all the post processes in the list of post-process commands
-            optRuntimeData opt_runtime_data(state.year, w, hourInTheYear);
+            optRuntimeData opt_runtime_data(state.year,
+                                            w,
+                                            hourInTheYear,
+                                            weeklyOptProblems_[numSpace]);
             postProcessesList_[numSpace]->runAll(opt_runtime_data);
 
             variables.weekBegin(state);
@@ -210,6 +212,7 @@ bool Economy::year(Progression::Task& progression,
         catch (Data::UnfeasibleProblemError&)
         {
             // need to clean next problemeHebdo
+            reinitOptim = true;
 
             // Indicate failed week list (first week of the year is "week number one" for the user
             // but w=0 for the loop)
@@ -223,6 +226,8 @@ bool Economy::year(Progression::Task& progression,
         }
 
         hourInTheYear += nbHoursInAWeek;
+
+        currentProblem.firstWeekOfSimulation = false;
 
         ++progression;
     }

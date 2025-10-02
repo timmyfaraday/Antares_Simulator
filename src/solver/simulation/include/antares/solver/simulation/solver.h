@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
+ * Copyright 2007-2024, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -21,8 +21,6 @@
 #ifndef __SOLVER_SIMULATION_SOLVER_H__
 #define __SOLVER_SIMULATION_SOLVER_H__
 
-#include <stdexcept>
-
 #include <yuni/job/queue/service.h>
 
 #include <antares/benchmarking/DurationCollector.h>
@@ -32,10 +30,9 @@
 #include <antares/writer/writer_factory.h>
 #include "antares/solver/hydro/management/management.h"
 #include "antares/solver/misc/options.h"
+#include "antares/solver/simulation/solver.data.h"
 #include "antares/solver/simulation/solver_utils.h"
 #include "antares/solver/variable/state.h"
-
-class OptimisationsSimulationTable;
 
 namespace Antares::Solver::Simulation
 {
@@ -89,7 +86,8 @@ private:
     /*!
     ** \brief Regenerate time-series if required for a given year
     */
-    void regenerateTimeSeries();
+    void regenerateTimeSeries(uint year);
+
     /*!
     ** \brief Builds sets of parallel years
     **
@@ -113,7 +111,7 @@ private:
     ** \param	years			List of years
     */
     void computeRandomNumbers(randomNumbers& randomForYears,
-                              unsigned years,
+                              std::vector<uint>& years,
                               std::map<unsigned int, bool>& isYearPerformed,
                               MersenneTwister& randomHydro);
 
@@ -127,7 +125,8 @@ private:
     ** Same thing for min and max costs over all years.
     ** Storing these costs to compute std deviation later.
     */
-    void computeAnnualCostsStatistics(Variable::State state);
+    void computeAnnualCostsStatistics(std::vector<Variable::State>& state,
+                                      setOfParallelYears& batch);
 
     /*!
     ** \brief Iterate through all MC years
@@ -137,21 +136,22 @@ private:
     */
     void loopThroughYears(uint firstYear, uint endYear, std::vector<Variable::State>& state);
 
+    //! Some temporary to avoid performing useless complex checks
+    Solver::Private::Simulation::CacheData pData;
     //!
     uint pNbYearsReallyPerformed;
     //! Max number of years performed in parallel
     uint pNbMaxPerformedYearsInParallel;
     //! Year by year output results
     bool pYearByYear;
+    //! The first set of parallel year(s) with a performed year was already run ?
+    bool pFirstSetParallelWithAPerformedYearWasRun;
 
     //! Statistics about annual (system and solution) costs
     annualCostsStatistics pAnnualStatistics;
 
     // Collecting durations inside the simulation
     Benchmarking::DurationCollector& pDurationCollector;
-
-    std::map<uint, std::pair<std::string, std::string>> yearSimulationBuffers_;
-    std::mutex buffersMutex_;
 
 public:
     //! The queue service that runs every set of parallel years
@@ -160,10 +160,6 @@ public:
     Antares::Solver::IResultWriter& pResultWriter;
 
     std::reference_wrapper<ISimulationObserver> simulationObserver_;
-    void storeYearBuffers(uint year, std::string&& firstBuffer, std::string&& secondBuffer);
-    void aggregateAndWriteSimulationTables();
-
-    OptimisationsSimulationTable& getSimulationTable(uint numSpace);
 }; // class ISimulation
 } // namespace Antares::Solver::Simulation
 

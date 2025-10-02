@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
+ * Copyright 2007-2024, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -29,8 +29,6 @@
 
 #include <antares/solver/optim-model-filler/FullKey.h>
 
-#include "MCYearAndTime.h"
-
 namespace Antares::Optimisation::LinearProblemApi
 {
 class IMipVariable;
@@ -44,7 +42,7 @@ struct IntegerInterval
     unsigned int initialTime = 0;
     unsigned int finalTime = 0;
 
-    class Iterator final
+    class Iterator
     {
     public:
         explicit Iterator(unsigned int current);
@@ -56,51 +54,57 @@ struct IntegerInterval
         unsigned int current_;
     };
 
-    [[nodiscard]] Iterator begin() const
+    Iterator begin() const
     {
         return Iterator(initialTime);
     }
 
-    [[nodiscard]] Iterator end() const
+    Iterator end() const
     {
         return Iterator(finalTime + 1);
     } // Make it inclusive
 
-    [[nodiscard]] std::size_t size() const
+    std::size_t size() const
     {
         return finalTime - initialTime + 1;
     }
 };
 
-class Dimensions final
+class Dimensions
 {
 public:
     Dimensions() = default;
-    Dimensions(std::optional<IntegerInterval> mcyearInterval,
+    Dimensions(std::optional<IntegerInterval> scenarioInterval,
                std::optional<IntegerInterval> timeInterval);
-    [[nodiscard]] bool isTimeDependent() const;
-    [[nodiscard]] bool isScenarioDependent() const;
-    [[nodiscard]] IntegerInterval getTimesteps() const;
-    [[nodiscard]] IntegerInterval getScenarioIndices() const;
-    [[nodiscard]] unsigned int getNumberOfTimesteps() const;
+    bool isTimeDependent() const;
+    bool isScenarioDependent() const;
+    IntegerInterval getTimesteps() const;
+    IntegerInterval getScenarioIndices() const;
+    unsigned int getNumberOfTimesteps() const;
 
 private:
-    std::optional<IntegerInterval> mcyearInterval;
+    std::optional<IntegerInterval> scenarioInterval;
     std::optional<IntegerInterval> timeInterval;
 };
 
-class VariableDictionary final
+struct TimeAndScenario
 {
-    using Value = Optimisation::LinearProblemApi::IMipVariable*;
+    unsigned int scenario;
+    unsigned int timestep;
+};
 
-    class VectorWithOffset final
+class VariableDictionary
+{
+    using Value = Antares::Optimisation::LinearProblemApi::IMipVariable*;
+
+    class VectorWithOffset
     {
     public:
         VectorWithOffset() = default;
         void resize(size_t initial_size, unsigned offset);
         Value& operator[](unsigned int index);
-        [[nodiscard]] const Value& operator[](unsigned int index) const;
-        [[nodiscard]] const Value& at(unsigned int index) const;
+        const Value& operator[](unsigned int index) const;
+        const Value& at(unsigned int index) const;
         Value& at(unsigned int index);
 
     private:
@@ -108,16 +112,16 @@ class VariableDictionary final
         unsigned int offset_ = 0;
     };
 
-    using TwoIndexVectorByYear = std::unordered_map<MCYearAndTime::MCYear, VectorWithOffset>;
-    using HashMapVector = std::unordered_map<PartialKey, TwoIndexVectorByYear, PartialKeyHash>;
+    using TwoIndexVector = std::vector<VectorWithOffset>;
+    using HashMapVector = std::unordered_map<PartialKey, TwoIndexVector, PartialKeyHash>;
 
-    HashMapVector storageOfAddedMipVariables_;
-    const TwoIndexVectorByYear& operator[](const PartialKey& k) const;
+    HashMapVector hmv;
+    const TwoIndexVector& operator[](const PartialKey& k) const;
 
 public:
     void addVariable(const Dimensions& dimensions,
                      const PartialKey& key,
-                     std::function<Value(const MCYearAndTime&, const std::string&)>&& func);
+                     std::function<Value(const TimeAndScenario&, const std::string&)>&& func);
 
     Value operator[](const FullKey& k) const;
     Value& operator[](const FullKey& k);
@@ -127,18 +131,15 @@ public:
 
     Value operator()(const std::string& component,
                      const std::string& variable,
-                     const MCYearAndTime::MCYear& scenario,
+                     unsigned int scenario,
                      unsigned int timestep) const;
 
     Value& operator()(const std::string& component,
                       const std::string& variable,
-                      const MCYearAndTime::MCYear& scenario,
+                      unsigned int scenario,
                       unsigned int timestep);
     Value operator()(const FullKey& fullKey) const;
 
     Value& operator()(const FullKey& fullKey);
-    static std::string buildVariableName(const PartialKey& key,
-                                         std::optional<MCYearAndTime::MCYear> mcyear,
-                                         std::optional<unsigned int> timestep);
 };
 } // namespace Antares::Optimization

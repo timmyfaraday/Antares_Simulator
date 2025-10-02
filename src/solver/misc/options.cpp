@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
+ * Copyright 2007-2024, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -21,16 +21,17 @@
 
 #include "antares/solver/misc/options.h"
 
+#include <algorithm>
 #include <fstream>
+
+#include <boost/algorithm/string/join.hpp>
 
 #include <antares/exception/LoadingError.hpp>
 #include "antares/config/config.h"
 #include "antares/solver/utils/ortools_utils.h"
-#include "antares/utils/utils.h"
 
 using namespace Antares;
 using namespace Antares::Data;
-namespace fs = std::filesystem;
 
 std::unique_ptr<Yuni::GetOpt::Parser> CreateParser(Settings& settings, StudyLoadOptions& options)
 {
@@ -67,9 +68,59 @@ std::unique_ptr<Yuni::GetOpt::Parser> CreateParser(Settings& settings, StudyLoad
                 "force-parallel",
                 "Override the max number of years computed simultaneously");
 
+    //--linear-solver
+    parser->add(options.solverOptions.linearSolver,
+                ' ',
+                "linear-solver",
+                "Solver used for linear optimizations during simulation\nAvailable solver list : "
+                  + availableLinearSolversString());
+
+    //--solver
+    parser->add(options.solverOptions.linearSolver,
+                ' ',
+                "solver",
+                "Deprecated, use linear-solver instead.");
+
+    //--linear-solver-parameters
+    parser->add(
+      options.solverOptions.linearSolverParameters,
+      ' ',
+      "linear-solver-parameters",
+      "Set linear solver-specific parameters, for instance --linear-solver-parameters=\"THREADS 1 "
+      "PRESOLVE 1\""
+      "for XPRESS or --linear-solver-parameters=\"parallel/maxnthreads 1, lp/presolving TRUE\" for "
+      "SCIP."
+      "Syntax is solver-dependent, and only supported for SCIP & XPRESS.");
+
+    //--solver-parameters
+    parser->add(options.solverOptions.linearSolverParameters,
+                ' ',
+                "solver-parameters",
+                "Deprecated, use linear-solver-parameters instead.");
+
+    //--quadratic-solver
+    parser->add(
+      options.solverOptions.quadraticSolver,
+      ' ',
+      "quadratic-solver",
+      "Solver used for quadratic optimizations during simulation\nAvailable solver list : "
+        + availableQuadraticSolversString());
+
+    //--quadratic-solver-parameters
+    parser->add(options.solverOptions.quadraticSolverParameters,
+                ' ',
+                "quadratic-solver-parameters",
+                "Set quadratic solver-specific parameters, for instance "
+                "--quadratic-solver-parameters=\"THREADS 8\""
+                "for XPRESS or --quadratic-solver-parameters=\"parallel/maxnthreads 8\" for SCIP."
+                "Syntax is solver-dependent.");
+
     parser->addParagraph("\nParameters");
     // --name
-    parser->add(settings.simulationName, 'n', "name", "Name of the current simulation");
+    parser->add(settings.simulationName,
+                'n',
+                "name",
+                "Set the name of the new simulation to VALUE");
     // --generators-only
     parser->addFlag(settings.tsGeneratorsOnly,
                     'g',
@@ -105,75 +156,6 @@ std::unique_ptr<Yuni::GetOpt::Parser> CreateParser(Settings& settings, StudyLoad
                     "Force the write output into a single zip archive");
 
     parser->addParagraph("\nOptimization");
-
-    //--linear-solver
-    parser->add(options.solverOptions.linearSolver,
-                ' ',
-                "linear-solver",
-                "Solver used for linear optimizations during simulation. Use --list-solvers to get "
-                "the avaible solver list");
-
-    //--solver
-    parser->add(options.solverOptions.linearSolver,
-                ' ',
-                "solver",
-                "Deprecated, use --linear-solver instead.");
-
-    //--linear-solver-param
-    parser->add(options.solverOptions.linearSolverParameters,
-                ' ',
-                "linear-solver-param",
-                "Linear solver-specific parameters, for instance \"THREADS 1 "
-                "PRESOLVE 1\""
-                " for XPRESS or \"parallel/maxnthreads 1, lp/presolving TRUE\" for "
-                "SCIP. Syntax is solver-dependent, and only supported for SCIP & XPRESS.");
-
-    //--solver-parameters
-    parser->add(options.solverOptions.linearSolverParameters,
-                ' ',
-                "solver-parameters",
-                "Deprecated, use --linear-solver-param instead.");
-
-    // --linear-solver-param-optim-1
-    parser->add(options.solverOptions.lpSolverParamOptim1,
-                ' ',
-                "linear-solver-param-optim-1",
-                "Linear solver-specific parameters for first optimization."
-                " Only supported for SCIP & XPRESS.");
-
-    // --linear-solver-param-optim-2
-    parser->add(options.solverOptions.lpSolverParamOptim2,
-                ' ',
-                "linear-solver-param-optim-2",
-                "Linear solver-specific parameters for second optimization."
-                " Only supported for SCIP & XPRESS.");
-
-    // --use-optim-1-basis-next-week
-    parser->addFlag(options.solverOptions.useOptim1BasisInNextWeek,
-                    ' ',
-                    "use-optim-1-basis-next-week",
-                    "Use basis of first optimization in next week's first optimization");
-
-    // --use-optim-1-basis-optim-2
-    parser->addFlag(options.solverOptions.useOptim1BasisInOptim2,
-                    ' ',
-                    "use-optim-1-basis-optim-2",
-                    "Use basis of first optimization in second optimization");
-
-    //--quadratic-solver
-    parser->add(options.solverOptions.quadraticSolver,
-                ' ',
-                "quadratic-solver",
-                "Solver used for quadratic optimizations during simulation. Use --list-solvers to "
-                "get the avaible solver list");
-
-    //--quadratic-solver-param
-    parser->add(options.solverOptions.quadraticSolverParameters,
-                ' ',
-                "quadratic-solver-param",
-                "Quadratic solver-specific parameters, for instance \"THREADS 8\""
-                " for XPRESS or \"parallel/maxnthreads 8\" for SCIP. "
-                "Syntax is solver-dependent.");
 
     // --optimization-range
     parser->addFlag(settings.simplexOptimRange,
@@ -235,7 +217,7 @@ std::unique_ptr<Yuni::GetOpt::Parser> CreateParser(Settings& settings, StudyLoad
     return parser;
 }
 
-void printPIDtoDisk(Settings& settings)
+void checkAndCorrectSettingsAndOptions(Settings& settings, Data::StudyLoadOptions& options)
 {
     const auto& optPID = settings.PID;
     if (!optPID.empty())
@@ -249,10 +231,8 @@ void printPIDtoDisk(Settings& settings)
             throw Error::WritingPID(optPID);
         }
     }
-}
 
-void checkAndCorrectSettingsAndOptions(Settings& settings, Data::StudyLoadOptions& options)
-{
+    // Simulation name
     if (!options.simulationName.empty())
     {
         settings.simulationName = options.simulationName;
@@ -290,37 +270,51 @@ void checkAndCorrectSettingsAndOptions(Settings& settings, Data::StudyLoadOption
     }
 
     options.checkForceSimulationMode();
+    checkForSolversExistence(options.solverOptions);
 
+    // no-output and force-zip-output
     if (settings.noOutput && settings.forceZipOutput)
     {
         throw Error::IncompatibleOutputOptions("no-output and zip-output options are incompatible");
     }
 }
 
-void checkStudyFolder(const std::string& studyFolder)
+void checkSolverExists(std::string solverName, const std::list<std::string> availableSolversList)
 {
-    if (studyFolder.empty())
+    // Check if solver is available
+    bool found = std::ranges::find(availableSolversList, solverName) != availableSolversList.end();
+    if (!found)
+    {
+        throw Error::InvalidSolver(solverName, boost::algorithm::join(availableSolversList, ","));
+    }
+}
+
+void checkForSolversExistence(Solver::Optimization::OptimizationOptions& solverOptions)
+{
+    checkSolverExists(solverOptions.linearSolver, getAvailableLinearSolverNames());
+    checkSolverExists(solverOptions.quadraticSolver, getAvailableQuadraticSolverNames());
+}
+
+void Settings::checkAndSetStudyFolder(const std::string& folder)
+{
+    // The study folder
+    if (folder.empty())
     {
         throw Error::NoStudyProvided();
     }
 
-    if (!Utils::isPathValid(studyFolder))
-    {
-        throw Error::StudyFolderContainsNonASCIIchars(studyFolder);
-    }
-}
-
-std::string fixStudyFolder(const std::string& studyFolder)
-{
-    fs::path abspath = fs::absolute(studyFolder);
+    // Making the path absolute
+    std::filesystem::path abspath = std::filesystem::absolute(folder);
     abspath = abspath.lexically_normal();
 
-    if (!fs::exists(abspath) || !fs::is_directory(abspath))
+    // Checking if the path exists
+    if (!std::filesystem::exists(abspath))
     {
-        throw Error::StudyFolderDoesNotExist(studyFolder);
+        throw Error::StudyFolderDoesNotExist(folder);
     }
 
-    return abspath.string();
+    // Copying the result
+    studyFolder = abspath.string();
 }
 
 void Settings::reset()

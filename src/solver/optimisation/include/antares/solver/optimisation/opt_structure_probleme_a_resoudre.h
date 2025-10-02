@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -18,13 +18,17 @@
 ** You should have received a copy of the Mozilla Public Licence 2.0
 ** along with Antares_Simulator. If not, see <https://opensource.org/license/mpl-2-0/>.
 */
-#pragma once
+#ifndef __SOLVER_OPTIMISATION_STRUCTURE_PROBLEME_A_RESOUDRE_H__
+#define __SOLVER_OPTIMISATION_STRUCTURE_PROBLEME_A_RESOUDRE_H__
 
-#include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include <antares/solver/utils/basis_status.h>
+
+#include "SparseVector.hxx"
+#include "opt_constants.h"
 
 namespace operations_research
 {
@@ -34,9 +38,8 @@ class MPSolver;
 /*--------------------------------------------------------------------------------------*/
 
 /* Le probleme a resoudre */
-class PROBLEME_ANTARES_A_RESOUDRE final
+struct PROBLEME_ANTARES_A_RESOUDRE
 {
-public:
     /* La matrice des contraintes */
     int NombreDeVariables;
     int NombreDeContraintes; /* Il est egal a :
@@ -48,8 +51,8 @@ public:
     std::string Sens;
     std::vector<int> IndicesDebutDeLigne;
     std::vector<int> NombreDeTermesDesLignes;
-    std::vector<double> CoefficientsDeLaMatriceDesContraintes;
-    std::vector<int> IndicesColonnes;
+    SparseVector<double> CoefficientsDeLaMatriceDesContraintes;
+    SparseVector<int> IndicesColonnes;
     int IncrementDAllocationMatriceDesContraintes;
     int NombreDeTermesDansLaMatriceDesContraintes;
     /* Donnees variables de la matrice des contraintes */
@@ -111,16 +114,6 @@ public:
 
     // PIMPL is used to break dependency to OR-Tools' linear_solver.h (big header)
     Antares::Optimization::BasisStatus basisStatus;
-
-    void clearBasis()
-    {
-        basisStatus.clear();
-    }
-
-    bool isMIP() const
-    {
-        return std::any_of(VariablesEntieres.cbegin(),
-                           VariablesEntieres.cend(),
-                           [](bool x) { return x; });
-    }
 };
+
+#endif /* __SOLVER_OPTIMISATION_STRUCTURE_PROBLEME_A_RESOUDRE_H__ */

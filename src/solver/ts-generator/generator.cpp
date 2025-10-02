@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -67,11 +67,11 @@ void ResizeGeneratedTimeSeries(Data::AreaList& areas, Data::Parameters& params)
 
 void DestroyAll(Data::Study& study)
 {
-    Destroy<Data::timeSeriesLoad>(study);
-    Destroy<Data::timeSeriesSolar>(study);
-    Destroy<Data::timeSeriesWind>(study);
-    Destroy<Data::timeSeriesHydro>(study);
-    Destroy<Data::timeSeriesThermal>(study);
+    Destroy<Data::timeSeriesLoad>(study, (uint)-1);
+    Destroy<Data::timeSeriesSolar>(study, (uint)-1);
+    Destroy<Data::timeSeriesWind>(study, (uint)-1);
+    Destroy<Data::timeSeriesHydro>(study, (uint)-1);
+    Destroy<Data::timeSeriesThermal>(study, (uint)-1);
 }
 
 } // namespace Antares::TSGenerator

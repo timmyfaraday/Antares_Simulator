@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -65,7 +65,7 @@ struct LinkVariable
 
 struct PROBLEME_HEBDO;
 
-class HourlyCSRProblem final
+class HourlyCSRProblem
 {
     using AdqPatchParams = Antares::Data::AdequacyPatch::AdqPatchParams;
 
@@ -73,13 +73,13 @@ public:
     explicit HourlyCSRProblem(const AdqPatchParams& adqPatchParams,
                               PROBLEME_HEBDO* p,
                               const Solver::Optimization::OptimizationOptions& solverOptions):
-        solverOptions_(solverOptions),
         adqPatchParams_(adqPatchParams),
         variableManager_(p->CorrespondanceVarNativesVarOptim,
                          p->NumeroDeVariableStockFinal,
                          p->NumeroDeVariableDeTrancheDeStock,
                          p->NombreDePasDeTempsPourUneOptimisation),
-        problemeHebdo_(p)
+        problemeHebdo_(p),
+        solverOptions_(solverOptions)
     {
         double temp = pow(10, -adqPatchParams.curtailmentSharing.thresholdVarBoundsRelaxation);
         belowThisThresholdSetToZero = std::min(temp, 0.1);
@@ -129,8 +129,6 @@ private:
     void setQuadraticCost();
     void setLinearCost();
 
-    const Solver::Optimization::OptimizationOptions& solverOptions_;
-
 public:
     // TODO [gp] : try to make these members private
     double belowThisThresholdSetToZero;
@@ -144,6 +142,8 @@ public:
 
     PROBLEME_HEBDO* problemeHebdo_;
     PROBLEME_ANTARES_A_RESOUDRE problemeAResoudre_;
+
+    const Solver::Optimization::OptimizationOptions& solverOptions_;
 
     std::map<int, int> numberOfConstraintCsrEns;
     std::map<int, int> numberOfConstraintCsrFlowDissociation;

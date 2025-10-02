@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -31,8 +31,7 @@ static void shortTermStorageLevelsRHS(
   int numberOfAreas,
   std::vector<double>& SecondMembre,
   const CORRESPONDANCES_DES_CONTRAINTES& CorrespondanceCntNativesCntOptim,
-  int hourInTheYear,
-  unsigned int year)
+  int hourInTheYear)
 {
     for (int areaIndex = 0; areaIndex < numberOfAreas; areaIndex++)
     {
@@ -41,7 +40,7 @@ static void shortTermStorageLevelsRHS(
             const int clusterGlobalIndex = storage.clusterGlobalIndex;
             int cnt = CorrespondanceCntNativesCntOptim
                         .ShortTermStorageLevelConstraint[clusterGlobalIndex];
-            SecondMembre[cnt] = storage.series->inflows.getCoefficient(year, hourInTheYear);
+            SecondMembre[cnt] = storage.series->inflows[hourInTheYear];
         }
     }
 }
@@ -51,8 +50,7 @@ static void shortTermStorageCumulationRHS(
   int numberOfAreas,
   std::vector<double>& SecondMembre,
   const CORRESPONDANCES_DES_CONTRAINTES_HEBDOMADAIRES& CorrespondancesDesContraintesHebdomadaires,
-  int weekFirstHour,
-  unsigned int year)
+  int weekFirstHour)
 {
     for (int areaIndex = 0; areaIndex < numberOfAreas; areaIndex++)
     {
@@ -60,8 +58,7 @@ static void shortTermStorageCumulationRHS(
         {
             for (const auto& additionalConstraints: storage.additionalConstraints)
             {
-                const auto& rhs = additionalConstraints->rhs().getColumn(year);
-                for (const auto& constraint: additionalConstraints->constraints)
+                for (const auto& constraint: additionalConstraints.constraints)
                 {
                     const int cnt = CorrespondancesDesContraintesHebdomadaires
                                       .ShortTermStorageCumulation[constraint.globalIndex];
@@ -70,8 +67,8 @@ static void shortTermStorageCumulationRHS(
                       constraint.hours.begin(),
                       constraint.hours.end(),
                       0.0,
-                      [weekFirstHour, &rhs](const double sum, const int hour)
-                      { return sum + rhs[weekFirstHour + hour - 1]; });
+                      [weekFirstHour, &additionalConstraints](const double sum, const int hour)
+                      { return sum + additionalConstraints.rhs[weekFirstHour + hour - 1]; });
                 }
             }
         }
@@ -179,8 +176,7 @@ void OPT_InitialiserLeSecondMembreDuProblemeLineaire(PROBLEME_HEBDO* problemeHeb
                                   problemeHebdo->NombreDePays,
                                   ProblemeAResoudre->SecondMembre,
                                   CorrespondanceCntNativesCntOptim,
-                                  hourInTheYear,
-                                  problemeHebdo->year);
+                                  hourInTheYear);
         for (uint32_t interco = 0; interco < problemeHebdo->NombreDInterconnexions; interco++)
         {
             if (const COUTS_DE_TRANSPORT& CoutDeTransport = problemeHebdo->CoutDeTransport[interco];
@@ -415,8 +411,7 @@ void OPT_InitialiserLeSecondMembreDuProblemeLineaire(PROBLEME_HEBDO* problemeHeb
                                   problemeHebdo->NombreDePays,
                                   ProblemeAResoudre->SecondMembre,
                                   problemeHebdo->CorrespondanceCntNativesCntOptimHebdomadaires,
-                                  weekFirstHour,
-                                  problemeHebdo->year);
+                                  weekFirstHour);
     if (problemeHebdo->OptimisationAvecCoutsDeDemarrage)
     {
         OPT_InitialiserLeSecondMembreDuProblemeLineaireCoutsDeDemarrage(problemeHebdo,

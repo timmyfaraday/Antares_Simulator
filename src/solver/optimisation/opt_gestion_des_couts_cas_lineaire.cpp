@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -88,12 +88,6 @@ static void shortTermStorageCost(
                 {
                     linearCost[varCostVariationWithdrawal] = storage.series->costVariationWithdrawal
                                                                [hourInTheYear];
-                }
-                if (const int var = variableManager.ShortTermStorageOverflow(clusterGlobalIndex,
-                                                                             pdtJour);
-                    storage.allowOverflow && var >= 0)
-                {
-                    linearCost[var] = storage.overflowCost;
                 }
             }
         }

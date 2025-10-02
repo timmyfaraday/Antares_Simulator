@@ -1,30 +1,36 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
- * See AUTHORS.txt
- * SPDX-License-Identifier: MPL-2.0
- * This file is part of Antares-Simulator,
- * Adequacy and Performance assessment for interconnected energy networks.
- *
- * Antares_Simulator is free software: you can redistribute it and/or modify
- * it under the terms of the Mozilla Public Licence 2.0 as published by
- * the Mozilla Foundation, either version 2 of the License, or
- * (at your option) any later version.
- *
- * Antares_Simulator is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * Mozilla Public Licence 2.0 for more details.
- *
- * You should have received a copy of the Mozilla Public Licence 2.0
- * along with Antares_Simulator. If not, see <https://opensource.org/license/mpl-2-0/>.
- */
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
+** See AUTHORS.txt
+** SPDX-License-Identifier: MPL-2.0
+** This file is part of Antares-Simulator,
+** Adequacy and Performance assessment for interconnected energy networks.
+**
+** Antares_Simulator is free software: you can redistribute it and/or modify
+** it under the terms of the Mozilla Public Licence 2.0 as published by
+** the Mozilla Foundation, either version 2 of the License, or
+** (at your option) any later version.
+**
+** Antares_Simulator is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+** Mozilla Public Licence 2.0 for more details.
+**
+** You should have received a copy of the Mozilla Public Licence 2.0
+** along with Antares_Simulator. If not, see <https://opensource.org/license/mpl-2-0/>.
+*/
 #pragma once
 
 #include "antares/study/binding_constraint/BindingConstraint.h"
 
 #include "../../variable.h"
 
-namespace Antares::Solver::Variable::Economy
+namespace Antares
+{
+namespace Solver
+{
+namespace Variable
+{
+namespace Economy
 {
 struct VCardBindingConstMarginCost
 {
@@ -208,13 +214,18 @@ public:
         NextType::yearEnd(year, numSpace);
     }
 
-    void computeSummary(unsigned int year, unsigned int numSpace)
+    void computeSummary(std::map<unsigned int, unsigned int>& numSpaceToYear,
+                        unsigned int nbYearsForCurrentSummary)
     {
-        // Merge all those values with the global results
-        AncestorType::pResults.merge(year, pValuesForTheCurrentYear[numSpace]);
+        for (unsigned int numSpace = 0; numSpace < nbYearsForCurrentSummary; ++numSpace)
+        {
+            // Merge all those values with the global results
+            AncestorType::pResults.merge(numSpaceToYear[numSpace] /*year*/,
+                                         pValuesForTheCurrentYear[numSpace]);
+        }
 
         // Next variable
-        NextType::computeSummary(year, numSpace);
+        NextType::computeSummary(numSpaceToYear, nbYearsForCurrentSummary);
     }
 
     void weekBegin(State& state)
@@ -303,11 +314,14 @@ public:
     }
 
     template<class V>
-    static void computeSpatialAggregatesSummary(V& allVars,
-                                                unsigned int year,
-                                                unsigned int numSpace)
+    static void computeSpatialAggregatesSummary(
+      V& allVars,
+      std::map<unsigned int, unsigned int>& numSpaceToYear,
+      unsigned int nbYearsForCurrentSummary)
     {
-        NextType::template computeSpatialAggregatesSummary<V>(allVars, year, numSpace);
+        NextType::template computeSpatialAggregatesSummary<V>(allVars,
+                                                              numSpaceToYear,
+                                                              nbYearsForCurrentSummary);
     }
 
     void beforeYearByYearExport(uint year, uint numSpace)
@@ -370,7 +384,6 @@ public:
             return;
         }
 
-        results.isCurrentVarNA = AncestorType::isNonApplicable;
         // Initializing external pointer on current variable non applicable status
         results.isCurrentVarNA[0] = isCurrentOutputNonApplicable(precision);
 
@@ -398,7 +411,6 @@ public:
                 && (fileLevel & VCardType::categoryFileLevel) && (precision & VCardType::precision))
             {
                 results.isPrinted = AncestorType::isPrinted;
-                results.isCurrentVarNA = AncestorType::isNonApplicable;
                 results.isCurrentVarNA[0] = isCurrentOutputNonApplicable(precision);
                 results.variableCaption = getBindConstraintCaption();
 
@@ -456,4 +468,7 @@ private:
 
 }; // class BindingConstMarginCost
 
-} // namespace Antares::Solver::Variable::Economy
+} // namespace Economy
+} // namespace Variable
+} // namespace Solver
+} // namespace Antares

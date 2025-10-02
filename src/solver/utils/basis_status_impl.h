@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -32,7 +32,7 @@ class BasisStatus;
 
 namespace Antares::Optimization
 {
-class BasisStatusImpl final
+class BasisStatusImpl
 {
 private:
     friend class BasisStatus;
@@ -45,6 +45,5 @@ private:
     void setStartingBasis(operations_research::MPSolver* solver) const;
     void extractBasis(const operations_research::MPSolver* solver);
     bool exists() const;
-    void clear();
 };
 } // namespace Antares::Optimization

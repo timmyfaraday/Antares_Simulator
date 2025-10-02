@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -35,6 +35,15 @@ AreaBalanceData Group1::GetAreaBalanceData()
             .ShortTermStorage = problemeHebdo_->ShortTermStorage};
 }
 
+NetPositionData Group1::GetNetPositionData()
+{
+    return {.CorrespondanceCntNativesCntOptim = problemeHebdo_->CorrespondanceCntNativesCntOptim,
+            .IndexDebutIntercoOrigine = problemeHebdo_->IndexDebutIntercoOrigine,
+            .IndexSuivantIntercoOrigine = problemeHebdo_->IndexSuivantIntercoOrigine,
+            .IndexDebutIntercoExtremite = problemeHebdo_->IndexDebutIntercoExtremite,
+            .IndexSuivantIntercoExtremite = problemeHebdo_->IndexSuivantIntercoExtremite};
+}
+
 FictitiousLoadData Group1::GetFictitiousLoadData()
 {
     return {.CorrespondanceCntNativesCntOptim = problemeHebdo_->CorrespondanceCntNativesCntOptim,
@@ -52,8 +61,8 @@ ShortTermStorageData Group1::GetShortTermStorageData()
 
 ShortTermStorageCumulativeConstraintData Group1::GetShortTermStorageCumulativeConstraintData()
 {
-    return {{.CorrespondanceCntNativesCntOptim = problemeHebdo_->CorrespondanceCntNativesCntOptim,
-             .ShortTermStorage = problemeHebdo_->ShortTermStorage},
+    return {problemeHebdo_->CorrespondanceCntNativesCntOptim,
+            problemeHebdo_->ShortTermStorage,
             problemeHebdo_->CorrespondanceCntNativesCntOptimHebdomadaires};
 }
 
@@ -78,6 +87,9 @@ void Group1::BuildConstraints()
 {
     auto areaBalanceData = GetAreaBalanceData();
     AreaBalance areaBalance(builder_, areaBalanceData);
+
+    auto netPositionData = GetNetPositionData();
+    NetPosition netPosition(builder_, netPositionData);
 
     auto fictitiousLoadData = GetFictitiousLoadData();
     FictitiousLoad fictitiousLoad(builder_, fictitiousLoadData);
@@ -116,6 +128,7 @@ void Group1::BuildConstraints()
         for (uint32_t pays = 0; pays < problemeHebdo_->NombreDePays; pays++)
         {
             areaBalance.add(pdt, pays);
+            netPosition.add(pdt, pays);
             fictitiousLoad.add(pdt, pays);
             shortTermStorageLevel.add(pdt, pays);
             shortTermStorageCostVariationInjectionBackward.add(pdt, pays);

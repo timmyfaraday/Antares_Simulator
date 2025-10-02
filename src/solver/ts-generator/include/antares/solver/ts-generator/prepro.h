@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -20,6 +20,8 @@
 */
 #ifndef __ANTARES_LIBS_STUDY_PARTS_THERMAL_PREPRO_H__
 #define __ANTARES_LIBS_STUDY_PARTS_THERMAL_PREPRO_H__
+
+#include <memory>
 
 #include <antares/array/matrix.h>
 #include <antares/solver/ts-generator/law.h>

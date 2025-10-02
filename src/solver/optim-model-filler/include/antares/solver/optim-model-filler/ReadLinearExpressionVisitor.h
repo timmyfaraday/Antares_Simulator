@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2025, RTE (https://www.rte-france.com)
+ * Copyright 2007-2024, RTE (https://www.rte-france.com)
  * See AUTHORS.txt
  * SPDX-License-Identifier: MPL-2.0
  * This file is part of Antares-Simulator,
@@ -27,9 +27,6 @@
 #include <antares/solver/optim-model-filler/FullKey.h>
 #include <antares/solver/optim-model-filler/TimeDependentLinearExpression.h>
 #include "antares/expressions/visitors/EvalVisitor.h"
-#include "antares/study/system-model/component.h"
-
-#include "EvaluationContextProvider.h"
 
 /**
  * Read Linear Expression Visitor
@@ -40,17 +37,19 @@
 namespace Antares::Optimization
 {
 
-class ReadLinearExpressionVisitor final
+class ReadLinearExpressionVisitor
     : public Expressions::Visitors::NodeVisitor<TimeDependentLinearExpression>
 {
 public:
-    ReadLinearExpressionVisitor() = delete;
-    ReadLinearExpressionVisitor(const Optimisation::EvaluationContextProvider& evalContextProvider,
-                                const Optimisation::LinearProblemApi::FillContext& fillContext,
-                                const ModelerStudy::SystemModel::Component& component);
+    explicit ReadLinearExpressionVisitor(Expressions::Visitors::EvaluationContext context,
+                                         Optimisation::LinearProblemApi::FillContext fillContext,
+                                         const std::string& componentId /* or vector ?*/);
+
+    ReadLinearExpressionVisitor() = default;
     std::string name() const override;
 
 private:
+    const Expressions::Visitors::EvaluationContext context_;
     TimeDependentLinearExpression visit(const Expressions::Nodes::SumNode* node) override;
     TimeDependentLinearExpression visit(const Expressions::Nodes::SubtractionNode* node) override;
     TimeDependentLinearExpression visit(
@@ -67,15 +66,17 @@ private:
     TimeDependentLinearExpression visit(const Expressions::Nodes::LiteralNode* node) override;
     TimeDependentLinearExpression visit(const Expressions::Nodes::PortFieldNode* node) override;
     TimeDependentLinearExpression visit(const Expressions::Nodes::PortFieldSumNode* node) override;
+    TimeDependentLinearExpression visit(
+      const Expressions::Nodes::ComponentVariableNode* node) override;
+    TimeDependentLinearExpression visit(
+      const Expressions::Nodes::ComponentParameterNode* node) override;
     TimeDependentLinearExpression visit(const Expressions::Nodes::TimeShiftNode* node) override;
     TimeDependentLinearExpression visit(const Expressions::Nodes::TimeIndexNode* node) override;
     TimeDependentLinearExpression visit(const Expressions::Nodes::TimeSumNode* node) override;
     TimeDependentLinearExpression visit(const Expressions::Nodes::AllTimeSumNode* node) override;
 
-    const Optimisation::EvaluationContextProvider& evalContextProvider_;
-    const Expressions::Visitors::EvaluationContext evalContext_;
-    const Optimisation::LinearProblemApi::FillContext& fillContext_;
-    const ModelerStudy::SystemModel::Component& component_;
+    Optimisation::LinearProblemApi::FillContext fillContext_;
+    const std::string& componentId_;
     Expressions::Visitors::EvalVisitor evalVisitor_;
 };
 } // namespace Antares::Optimization

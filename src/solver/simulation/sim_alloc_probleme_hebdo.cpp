@@ -1,5 +1,5 @@
 /*
-** Copyright 2007-2025, RTE (https://www.rte-france.com)
+** Copyright 2007-2024, RTE (https://www.rte-france.com)
 ** See AUTHORS.txt
 ** SPDX-License-Identifier: MPL-2.0
 ** This file is part of Antares-Simulator,
@@ -159,6 +159,7 @@ void SIM_AllocationProblemePasDeTemps(PROBLEME_HEBDO& problem,
 
         variablesMapping.NumeroDeVariableDuPalierThermique
           .assign(study.runtime.thermalPlantTotalCount, 0);
+        variablesMapping.NumeroDeVariableNetPosition.assign(nbPays, 0);
         variablesMapping.NumeroDeVariablesDeLaProdHyd.assign(nbPays, 0);
         variablesMapping.NumeroDeVariablesDePompage.assign(nbPays, 0);
         variablesMapping.NumeroDeVariablesDeNiveau.assign(nbPays, 0);
@@ -187,8 +188,6 @@ void SIM_AllocationProblemePasDeTemps(PROBLEME_HEBDO& problem,
                                                                             0);
         variablesMapping.SIM_ShortTermStorage.CostVariationWithdrawal.assign(shortTermStorageCount,
                                                                              0);
-
-        variablesMapping.SIM_ShortTermStorage.OverflowVariable.assign(shortTermStorageCount, 0);
 
         problem.CorrespondanceCntNativesCntOptim[k].NumeroDeContrainteDesBilansPays.assign(nbPays,
                                                                                            0);
@@ -284,23 +283,21 @@ void SIM_AllocationConstraints(PROBLEME_HEBDO& problem,
         problem.MatriceDesContraintesCouplantes[constraintIndex]
           .SecondMembreDeLaContrainteCouplante.assign(NombreDePasDeTemps, 0.);
 
-        auto linkCount = bc->linkCount();
         problem.MatriceDesContraintesCouplantes[constraintIndex]
-          .NumeroDeLInterconnexion.assign(linkCount, 0);
+          .NumeroDeLInterconnexion.assign(bc->linkCount(), 0);
         problem.MatriceDesContraintesCouplantes[constraintIndex]
-          .PoidsDeLInterconnexion.assign(linkCount, 0.);
+          .PoidsDeLInterconnexion.assign(bc->linkCount(), 0.);
         problem.MatriceDesContraintesCouplantes[constraintIndex]
-          .OffsetTemporelSurLInterco.assign(linkCount, 0);
+          .OffsetTemporelSurLInterco.assign(bc->linkCount(), 0);
 
-        auto clusterCount = bc->clusterCount();
         problem.MatriceDesContraintesCouplantes[constraintIndex]
-          .NumeroDuPalierDispatch.assign(clusterCount, 0);
+          .NumeroDuPalierDispatch.assign(bc->clusterCount(), 0);
         problem.MatriceDesContraintesCouplantes[constraintIndex]
-          .PoidsDuPalierDispatch.assign(clusterCount, 0.);
+          .PoidsDuPalierDispatch.assign(bc->clusterCount(), 0.);
         problem.MatriceDesContraintesCouplantes[constraintIndex]
-          .OffsetTemporelSurLePalierDispatch.assign(clusterCount, 0);
+          .OffsetTemporelSurLePalierDispatch.assign(bc->clusterCount(), 0);
         problem.MatriceDesContraintesCouplantes[constraintIndex]
-          .PaysDuPalierDispatch.assign(clusterCount, 0);
+          .PaysDuPalierDispatch.assign(bc->clusterCount(), 0);
 
         // TODO : create a numberOfTimeSteps method in class of runtime.bindingConstraint
         unsigned int nbTimeSteps;
@@ -403,6 +400,9 @@ void SIM_AllocateAreas(PROBLEME_HEBDO& problem,
 
         problem.ResultatsHoraires[k].TurbinageHoraire.assign(NombreDePasDeTemps, 0.);
         problem.ResultatsHoraires[k].PompageHoraire.assign(NombreDePasDeTemps, 0.);
+
+        problem.ResultatsHoraires[k].NetPositionHoraire.assign(NombreDePasDeTemps, 0.);
+
         problem.ResultatsHoraires[k].CoutsMarginauxHoraires.assign(NombreDePasDeTemps, 0.);
         problem.ResultatsHoraires[k].CoutsMarginauxHorairesCSR.assign(NombreDePasDeTemps, 0.);
         problem.ResultatsHoraires[k].niveauxHoraires.assign(NombreDePasDeTemps, 0.);
@@ -456,13 +456,13 @@ void SIM_AllocateAreas(PROBLEME_HEBDO& problem,
         }
         // Short term storage results
         const unsigned long nbShortTermStorage = study.areas.byIndex[k]->shortTermStorage.count();
-        problem.ResultatsHoraires[k].ShortTermStorage.resize(nbShortTermStorage);
-        for (uint sts = 0; sts < nbShortTermStorage; sts++)
+        problem.ResultatsHoraires[k].ShortTermStorage.resize(NombreDePasDeTemps);
+        for (uint pdt = 0; pdt < NombreDePasDeTemps; pdt++)
         {
-            problem.ResultatsHoraires[k].ShortTermStorage[sts].injection.resize(NombreDePasDeTemps);
-            problem.ResultatsHoraires[k].ShortTermStorage[sts].withdrawal.resize(
-              NombreDePasDeTemps);
-            problem.ResultatsHoraires[k].ShortTermStorage[sts].level.resize(NombreDePasDeTemps);
+            problem.ResultatsHoraires[k].ShortTermStorage[pdt].injection.resize(nbShortTermStorage);
+            problem.ResultatsHoraires[k].ShortTermStorage[pdt].withdrawal.resize(
+              nbShortTermStorage);
+            problem.ResultatsHoraires[k].ShortTermStorage[pdt].level.resize(nbShortTermStorage);
         }
     }
 }
