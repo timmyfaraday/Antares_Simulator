@@ -21,17 +21,17 @@
 
 #include "antares/solver/optimisation/post_process_commands.h"
 
+#include <fstream> // Defines std::ofstream, std::ifstream, std::fstream
+#include <iomanip>
+#include <string>
+
+#include "antares/io/outputs/SimulationTableCsv.h"
 #include "antares/solver/optimisation/adequacy_patch_csr/adq_patch_curtailment_sharing.h"
+#include "antares/solver/optimisation/run-thermal-heuristic.h"
 #include "antares/solver/optimisation/weekly_optimization.h"
 #include "antares/solver/simulation/adequacy_patch_runtime_data.h"
 #include "antares/solver/simulation/common-eco-adq.h"
 #include "antares/solver/utils/filename.h"
-#include "antares/solver/optimisation/run-thermal-heuristic.h"
-#include <fstream>    // Defines std::ofstream, std::ifstream, std::fstream
-#include <string>
-#include <iomanip>
-
-
 
 namespace Antares::Solver::Simulation
 {
@@ -271,15 +271,16 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
     auto backup = problemeHebdo_->CorrespondanceVarNativesVarOptim;
 
     auto variableManager = VariableManagerFromProblemHebdo(problemeHebdo_);
-    
-    for (uint hour = 0; hour < nbHoursInWeek; hour++){
+
+    for (uint hour = 0; hour < nbHoursInWeek; hour++)
+    {
         auto f = problemeHebdo_->ValeursDeNTC[hour].ValeurDuFlux;
-        logs.info() << "[adq-patch] flux Before ADQPTCH:" <<f;// << problemeHebdo_;
+        logs.info() << "[adq-patch] flux Before ADQPTCH:" << f; // << problemeHebdo_;
     }
 
-
     // ens bef adqp
-    std::vector<std::vector<double>> ENSBef, ENSAfter, SpillBef, SpillAfter, ENSRedispatch, SpillRedispatch, dtgMrgBef,dtgMrgAfter, dtgMrgRedispatch;
+    std::vector<std::vector<double>> ENSBef, ENSAfter, SpillBef, SpillAfter, ENSRedispatch,
+      SpillRedispatch, dtgMrgBef, dtgMrgAfter, dtgMrgRedispatch;
     ENSBef.resize(problemeHebdo_->NombreDePays);
     SpillBef.resize(problemeHebdo_->NombreDePays);
     ENSAfter.resize(problemeHebdo_->NombreDePays);
@@ -290,31 +291,28 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
     dtgMrgAfter.resize(problemeHebdo_->NombreDePays);
     dtgMrgRedispatch.resize(problemeHebdo_->NombreDePays);
 
-    
     // const double dtgMrg = scratchpad.dispatchableGenerationMargin[hour];
-
 
     for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
     {
         // logs.info() << area << " with ens / Spill:";
         ENSBef[area] = problemeHebdo_->ResultatsHoraires[area].ValeursHorairesDeDefaillancePositive;
-        SpillBef[area] = problemeHebdo_->ResultatsHoraires[area].ValeursHorairesDeDefaillanceNegative;
+        SpillBef[area] = problemeHebdo_->ResultatsHoraires[area]
+                           .ValeursHorairesDeDefaillanceNegative;
         const auto& scratchpad = area_list_[area]->scratchpad[numSpace_];
-        dtgMrgBef[area] = std::vector<double>(std::begin(scratchpad.dispatchableGenerationMargin),std::end(scratchpad.dispatchableGenerationMargin));
+        dtgMrgBef[area] = std::vector<double>(std::begin(scratchpad.dispatchableGenerationMargin),
+                                              std::end(scratchpad.dispatchableGenerationMargin));
 
         // dtgMrgBef[area] = scratchpad.dispatchableGenerationMargin.copy();
     }
 
     // for (uint32_t area = 0; area < ENSBef.size(); ++area) {
     //     std::string areaName = problemeHebdo_->NomsDesPays[area];
-    //     // std::string areaName = getAreaName(area); // Replace with your method to get area names
-    //     for (uint h = 0; h < ENSBef[area].size(); ++h) {
+    //     // std::string areaName = getAreaName(area); // Replace with your method to get area
+    //     names for (uint h = 0; h < ENSBef[area].size(); ++h) {
     //         logs.info("dtg bla ", dtgMrg[area].at(h))
     //     }
     // }
-
- 
-
 
     // RUN ADQP
     for (int hourInWeek: hoursRequiringCurtailmentSharing)
@@ -323,42 +321,47 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
         hourlyCsrProblem.run(week, year);
     }
 
-    for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area){
+    for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
+    {
         logs.info() << area << " with ens / Spill:";
-        ENSAfter[area] = problemeHebdo_->ResultatsHoraires[area].ValeursHorairesDeDefaillancePositive;
-        SpillAfter[area] = problemeHebdo_->ResultatsHoraires[area].ValeursHorairesDeDefaillanceNegative;
+        ENSAfter[area] = problemeHebdo_->ResultatsHoraires[area]
+                           .ValeursHorairesDeDefaillancePositive;
+        SpillAfter[area] = problemeHebdo_->ResultatsHoraires[area]
+                             .ValeursHorairesDeDefaillanceNegative;
     }
-
-
-
-
 
     // Filtering Affected Areas, i.e, areas with weird case
     std::set<uint32_t> affectedAreas;
 
-    for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area) {
-        for (uint h = 0; h < nbHoursInWeek; ++h) {
-            logs.info() << area << " with ENSBef, ENSAfter / SpillBef, SpillAfter:" ;
-            logs.info() << ENSBef[area][h] << " " << ENSAfter[area][h] << " " 
-                        << SpillBef[area][h] << " " << SpillAfter[area][h] << " ";
+    for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
+    {
+        for (uint h = 0; h < nbHoursInWeek; ++h)
+        {
+            logs.info() << area << " with ENSBef, ENSAfter / SpillBef, SpillAfter:";
+            logs.info() << ENSBef[area][h] << " " << ENSAfter[area][h] << " " << SpillBef[area][h]
+                        << " " << SpillAfter[area][h] << " ";
 
             // Check if ENS transitioned from 0 to positive
-            if (ENSBef[area][h] == 0 && ENSAfter[area][h] > 0) {
+            if (ENSBef[area][h] == 0 && ENSAfter[area][h] > 0)
+            {
                 affectedAreas.insert(area);
             }
 
             // Check if Spillage transitioned from 0 to positive
-            if (SpillBef[area][h] == 0 && SpillAfter[area][h] > 0) {
+            if (SpillBef[area][h] == 0 && SpillAfter[area][h] > 0)
+            {
                 affectedAreas.insert(area);
             }
         }
     }
 
-    // HERE WE DISPATCH IN CASES NEEDED 
-    if (!affectedAreas.empty()){
+    // HERE WE DISPATCH IN CASES NEEDED
+    if (!affectedAreas.empty())
+    {
         // Print the selected affected areas
         logs.info() << "Affected Areas:";
-        for (const auto& area : affectedAreas) {
+        for (const auto& area: affectedAreas)
+        {
             logs.info() << "Area " << area;
         }
 
@@ -371,67 +374,81 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
         // nonAffected Areas dispatch has to be fixed, we do this by fixing their ENS to the old one
         int var;
         double oldValue;
-        for (uint h = 0; h < nbHoursInWeek ; ++h){
-            for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area) {
-                if (!affectedAreas.contains(area)){
-                    logs.info() << "[adq-patch] Affected Area loop I "<<area;
-                    var = problemeHebdo_->CorrespondanceVarNativesVarOptim[h].NumeroDeVariableDefaillancePositive[area];
+        for (uint h = 0; h < nbHoursInWeek; ++h)
+        {
+            for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
+            {
+                if (!affectedAreas.contains(area))
+                {
+                    logs.info() << "[adq-patch] Affected Area loop I " << area;
+                    var = problemeHebdo_->CorrespondanceVarNativesVarOptim[h]
+                            .NumeroDeVariableDefaillancePositive[area];
                     oldValue = ENSAfter[area][h];
                     Xmax[var] = oldValue + 0.1;
                     Xmin[var] = oldValue - 0.1;
-                
                 }
             }
-        }    
+        }
 
         // Also, affectedAreas that are exporting cannot have an ENS, i.e, their ENS is zero.
         // int var;
         // double oldValue;
         double bilanPays;
         long pInterco;
-        for (uint h = 0; h < nbHoursInWeek ; ++h){
-            for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area) {
-                if (affectedAreas.contains(area)){
-                    logs.info() << "[adq-patch] Affected Area loop II "<<area;
+        for (uint h = 0; h < nbHoursInWeek; ++h)
+        {
+            for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
+            {
+                if (affectedAreas.contains(area))
+                {
+                    logs.info() << "[adq-patch] Affected Area loop II " << area;
 
                     // compute Balance of area:
                     bilanPays = 0;
                     // Export, négative
                     pInterco = problemeHebdo_->IndexDebutIntercoOrigine[area];
-                    while(pInterco >=0){
+                    while (pInterco >= 0)
+                    {
                         bilanPays += problemeHebdo_->ValeursDeNTC[h].ValeurDuFlux[pInterco];
                         pInterco = problemeHebdo_->IndexSuivantIntercoOrigine[pInterco];
-                        logs.info() << "[adq-patch] Interco Exp "<<problemeHebdo_->ValeursDeNTC[h].ValeurDuFlux[pInterco];
+                        logs.info() << "[adq-patch] Interco Exp "
+                                    << problemeHebdo_->ValeursDeNTC[h].ValeurDuFlux[pInterco];
                     }
                     // Import, positive
                     pInterco = problemeHebdo_->IndexDebutIntercoExtremite[area];
-                    while(pInterco >=0){
+                    while (pInterco >= 0)
+                    {
                         bilanPays += problemeHebdo_->ValeursDeNTC[h].ValeurDuFlux[pInterco];
                         pInterco = problemeHebdo_->IndexSuivantIntercoExtremite[pInterco];
-                        logs.info() << "[adq-patch] Interco Imp. "<<problemeHebdo_->ValeursDeNTC[h].ValeurDuFlux[pInterco];
+                        logs.info() << "[adq-patch] Interco Imp. "
+                                    << problemeHebdo_->ValeursDeNTC[h].ValeurDuFlux[pInterco];
                     }
                     if (bilanPays != 0)
-                        logs.info() << "[adq-patch] NetPos "<<bilanPays;
-                    // if export bigger than import, i.e, bilanPays is negative. 
+                    {
+                        logs.info() << "[adq-patch] NetPos " << bilanPays;
+                    }
+                    // if export bigger than import, i.e, bilanPays is negative.
                     // an area that is exporting should have ENS <=0.
-                    if (bilanPays < 0.){
-                        var = problemeHebdo_->CorrespondanceVarNativesVarOptim[h].NumeroDeVariableDefaillancePositive[area];
+                    if (bilanPays < 0.)
+                    {
+                        var = problemeHebdo_->CorrespondanceVarNativesVarOptim[h]
+                                .NumeroDeVariableDefaillancePositive[area];
                         oldValue = ENSAfter[area][h];
                         // Xmax[var] = oldValue + 0.1;
                         Xmin[var] = 0.;
                     }
-                    
                 }
             }
         }
 
         // the flow is fixed for every connection
-        for (uint hourInWeek = 0; hourInWeek < nbHoursInWeek ; ++hourInWeek)// hourInWeek: hoursRequiringCurtailmentSharing)
+        for (uint hourInWeek = 0; hourInWeek < nbHoursInWeek;
+             ++hourInWeek) // hourInWeek: hoursRequiringCurtailmentSharing)
         {
             for (uint32_t Interco = 0; Interco < problemeHebdo_->NombreDInterconnexions; ++Interco)
             {
                 int var = variableManager.NTCDirect(Interco, hourInWeek);
-                auto f = problemeHebdo_->ValeursDeNTC[hourInWeek].ValeurDuFlux[Interco]; 
+                auto f = problemeHebdo_->ValeursDeNTC[hourInWeek].ValeurDuFlux[Interco];
                 Xmax[var] = f + 0.1;
                 Xmin[var] = f - 0.1;
                 logs.info() << problemeHebdo_->ProblemeAResoudre->NomDesVariables[var];
@@ -439,71 +456,70 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
             // logs.info() << "[adq-patch] Hello NTCs";
         }
 
-
-
-
-
         // REDISPATCH PART
         // // here we redispatch truly and smartly
         const int NombreDePasDeTempsPourUneOptimisation = problemeHebdo_
                                                             ->NombreDePasDeTempsPourUneOptimisation;
 
-
+        SimulationTableCsv simTable;
         int DernierPdtDeLIntervalle;
-        for (uint pdtHebdo = 0, numeroDeLIntervalle = 0; pdtHebdo < problemeHebdo_->NombreDePasDeTemps;
-            pdtHebdo = DernierPdtDeLIntervalle, numeroDeLIntervalle++){
-
+        for (uint pdtHebdo = 0, numeroDeLIntervalle = 0;
+             pdtHebdo < problemeHebdo_->NombreDePasDeTemps;
+             pdtHebdo = DernierPdtDeLIntervalle, numeroDeLIntervalle++)
+        {
             int PremierPdtDeLIntervalle = pdtHebdo;
             DernierPdtDeLIntervalle = pdtHebdo + NombreDePasDeTempsPourUneOptimisation;
             auto optPeriodStringGenerator = createOptPeriodAsString(
-            problemeHebdo_->OptimisationAuPasHebdomadaire,
-            numeroDeLIntervalle,
-            problemeHebdo_->weekInTheYear,
-            problemeHebdo_->year);
-            bool b = OPT_AppelDuSimplexe(opt_runtime_data.weeklyOptimization.options_,
-                                    problemeHebdo_,
-                                    numeroDeLIntervalle,
-                                    PREMIERE_OPTIMISATION,
-                                    *optPeriodStringGenerator,
-                                    opt_runtime_data.weeklyOptimization.writer_);
+              problemeHebdo_->OptimisationAuPasHebdomadaire,
+              numeroDeLIntervalle,
+              problemeHebdo_->weekInTheYear,
+              problemeHebdo_->year);
+            bool b = OPT_AppelDuSimplexe(
+              opt_runtime_data.weeklyOptimization.options_.firstOptimOptions,
+              problemeHebdo_,
+              numeroDeLIntervalle,
+              PREMIERE_OPTIMISATION,
+              *optPeriodStringGenerator,
+              opt_runtime_data.weeklyOptimization.writer_,
+              simTable);
 
-            if (b && !problemeHebdo_->Expansion && !problemeHebdo_->OptimisationAvecVariablesEntieres)
+            if (b && !problemeHebdo_->Expansion
+                && !problemeHebdo_->OptimisationAvecVariablesEntieres)
             {
                 // We need to adjust some stuff before running the 2nd optimisation
                 runThermalHeuristic(problemeHebdo_);
-                
-                bool b = OPT_AppelDuSimplexe(opt_runtime_data.weeklyOptimization.options_,
-                                    problemeHebdo_,
-                                    numeroDeLIntervalle,
-                                    DEUXIEME_OPTIMISATION,
-                                    *optPeriodStringGenerator,
-                                    opt_runtime_data.weeklyOptimization.writer_);    
+
+                bool b = OPT_AppelDuSimplexe(
+                  opt_runtime_data.weeklyOptimization.options_.firstOptimOptions,
+                  problemeHebdo_,
+                  numeroDeLIntervalle,
+                  DEUXIEME_OPTIMISATION,
+                  *optPeriodStringGenerator,
+                  opt_runtime_data.weeklyOptimization.writer_,
+                  simTable);
             } // END second sep
             logs.info() << "End of second Step";
 
-
-
-               // fileG1:
-             // 1. Define the dump file path in your build/run folder
-            std::string dumpFile = "/home/alzoobiali/Desktop/Redispatch/intermediateResults/ENSdispatch.csv";
-
+            // fileG1:
+            // 1. Define the dump file path in your build/run folder
+            std::string dumpFile = "/home/alzoobiali/Desktop/Redispatch/intermediateResults/"
+                                   "ENSdispatch.csv";
 
             // 2. Open the file (overwrite or append as you wish)
             std::ofstream ofsDispatch(dumpFile, std::ios::app /* or std::ios::app */);
 
-            for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area) {
+            for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
+            {
                 std::string areaName = problemeHebdo_->NomsDesPays[area];
-                // std::string areaName = getAreaName(area); // Replace with your method to get area names
-                for (uint h = 0; h < nbHoursInWeek; ++h) {
+                // std::string areaName = getAreaName(area); // Replace with your method to get area
+                // names
+                for (uint h = 0; h < nbHoursInWeek; ++h)
+                {
                     uint32_t timeId = h + week * 168; // Assuming 'week' is defined in your context
-                    ofsDispatch << h << "\t"
-                        << timeId << "\t"
-                        << area << "\t"
-                        << areaName << "\t"
-                        << std::fixed << std::setprecision(3) << ENSBef[area][h] << "\t"
-                        << std::fixed << std::setprecision(3) << SpillBef[area][h] << "\t"
-                        << std::fixed << std::setprecision(3) << dtgMrgBef[area][h] << "\n";
-
+                    ofsDispatch << h << "\t" << timeId << "\t" << area << "\t" << areaName << "\t"
+                                << std::fixed << std::setprecision(3) << ENSBef[area][h] << "\t"
+                                << std::fixed << std::setprecision(3) << SpillBef[area][h] << "\t"
+                                << std::fixed << std::setprecision(3) << dtgMrgBef[area][h] << "\n";
                 }
             }
 
@@ -512,22 +528,23 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
 
             // FileG2
             // 1. Define the dump file path in your build/run folder
-            std::string dumpFile2 = "/home/alzoobiali/Desktop/Redispatch/intermediateResults/ENSAdequacyPatch.csv";
+            std::string dumpFile2 = "/home/alzoobiali/Desktop/Redispatch/intermediateResults/"
+                                    "ENSAdequacyPatch.csv";
             // 2. Open the file (overwrite or append as you wish)
             std::ofstream ofsAdequacyPatch(dumpFile2, std::ios::app /* or std::ios::app */);
 
-
-            for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area) {
+            for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
+            {
                 std::string areaName = problemeHebdo_->NomsDesPays[area];
-                // std::string areaName = getAreaName(area); // Replace with your method to get area names
-                for (uint h = 0; h < nbHoursInWeek; ++h) {
+                // std::string areaName = getAreaName(area); // Replace with your method to get area
+                // names
+                for (uint h = 0; h < nbHoursInWeek; ++h)
+                {
                     uint32_t timeId = h + week * 168; // Assuming 'week' is defined in your context
-                    ofsAdequacyPatch << h << "\t"
-                        << timeId << "\t"
-                        << area << "\t"
-                        << areaName << "\t"
-                        << std::fixed << std::setprecision(3) << ENSAfter[area][h] << "\t"
-                        << std::fixed << std::setprecision(3) << SpillAfter[area][h] << "\n";
+                    ofsAdequacyPatch << h << "\t" << timeId << "\t" << area << "\t" << areaName
+                                     << "\t" << std::fixed << std::setprecision(3)
+                                     << ENSAfter[area][h] << "\t" << std::fixed
+                                     << std::setprecision(3) << SpillAfter[area][h] << "\n";
                 }
             }
             // 4. Close the file when done
@@ -536,51 +553,56 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
             // DispatchableMarginPostProcessCmd
             // std::vector<uint32_t> dummyAreas(problemeHebdo_->NombreDePays);
             // std::iota(dummyAreas.begin(), dummyAreas.end(), 0);
-            DispatchableMarginPostProcessCmd dispatchableMarginCmd(problemeHebdo_, numSpace_, area_list_);
+            DispatchableMarginPostProcessCmd dispatchableMarginCmd(problemeHebdo_,
+                                                                   numSpace_,
+                                                                   area_list_);
             dispatchableMarginCmd.execute(opt_runtime_data);
 
-            //FileG3
-            // extracting data:
-            for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area){
+            // FileG3
+            //  extracting data:
+            for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
+            {
                 // logs.info() << area << " with ens / Spill:";
-                ENSRedispatch[area] = problemeHebdo_->ResultatsHoraires[area].ValeursHorairesDeDefaillancePositive;
-                SpillRedispatch[area] = problemeHebdo_->ResultatsHoraires[area].ValeursHorairesDeDefaillanceNegative;
+                ENSRedispatch[area] = problemeHebdo_->ResultatsHoraires[area]
+                                        .ValeursHorairesDeDefaillancePositive;
+                SpillRedispatch[area] = problemeHebdo_->ResultatsHoraires[area]
+                                          .ValeursHorairesDeDefaillanceNegative;
                 const auto& scratchpad = area_list_[area]->scratchpad[numSpace_];
-                dtgMrgRedispatch[area] = std::vector<double>(std::begin(scratchpad.dispatchableGenerationMargin),std::end(scratchpad.dispatchableGenerationMargin));
+                dtgMrgRedispatch[area] = std::vector<double>(
+                  std::begin(scratchpad.dispatchableGenerationMargin),
+                  std::end(scratchpad.dispatchableGenerationMargin));
             }
 
             // 1. Define the dump file path in your build/run folder
-            std::string dumpFile3 = "/home/alzoobiali/Desktop/Redispatch/intermediateResults/ENSRedispatch.csv";
-
+            std::string dumpFile3 = "/home/alzoobiali/Desktop/Redispatch/intermediateResults/"
+                                    "ENSRedispatch.csv";
 
             // 2. Open the file (overwrite or append as you wish)
             std::ofstream ofsRedispatch(dumpFile3, std::ios::app /* or std::ios::app */);
 
-            for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area) {
+            for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
+            {
                 std::string areaName = problemeHebdo_->NomsDesPays[area];
-                // std::string areaName = getAreaName(area); // Replace with your method to get area names
-                for (uint h = 0; h < nbHoursInWeek; ++h) {
+                // std::string areaName = getAreaName(area); // Replace with your method to get area
+                // names
+                for (uint h = 0; h < nbHoursInWeek; ++h)
+                {
                     uint32_t timeId = h + week * 168; // Assuming 'week' is defined in your context
-                    ofsRedispatch << h << "\t"
-                        << timeId << "\t"
-                        << area << "\t"
-                        << areaName << "\t"
-                        << std::fixed << std::setprecision(3) << ENSRedispatch[area][h] << "\t"
-                        << std::fixed << std::setprecision(3) << SpillRedispatch[area][h] << "\t"
-                        << std::fixed << std::setprecision(3) << dtgMrgRedispatch[area][h] << "\n";
+                    ofsRedispatch << h << "\t" << timeId << "\t" << area << "\t" << areaName << "\t"
+                                  << std::fixed << std::setprecision(3) << ENSRedispatch[area][h]
+                                  << "\t" << std::fixed << std::setprecision(3)
+                                  << SpillRedispatch[area][h] << "\t" << std::fixed
+                                  << std::setprecision(3) << dtgMrgRedispatch[area][h] << "\n";
                 }
             }
 
             // 4. Close the file when done
             ofsRedispatch.close();
 
-            
         } // ENS REDISPATCH
 
-         
     } // END REDISPATCH IF SET Affected non empty
 
-    
 } // END CSR
 
 double CurtailmentSharingPostProcessCmd::calculateDensNewAndTotalLmrViolation()
@@ -663,131 +685,105 @@ std::vector<double> CurtailmentSharingPostProcessCmd::calculateENSoverAllAreasFo
 
 } // namespace Antares::Solver::Simulation
 
+// OPT_OptimisationHebdomadaire(opt_runtime_data.weeklyOptimization.options_,
+//                              problemeHebdo_,
+//                              opt_runtime_data.weeklyOptimization.writer_,
+//                              opt_runtime_data.weeklyOptimization.simulationObserver_);
 
+// opt_runtime_data.weeklyOptimization.solve();
 
+// opt_runtime_data.weeklyOptimization.solve();
 
+// for (auto& cnxn: opt_runtime_data.weeklyOptimization.problemeHebdo_->ValeursDeNTC){
+//         logs.info() << "[adq-patch] Hello ValeurDeFlux AFTER adq is:"<<cnxn.ValeurDuFlux;
+//         cnxn.ValeurDeNTCOrigineVersExtremite = cnxn.ValeurDuFlux;
+//         cnxn.ValeurDeNTCExtremiteVersOrigine = cnxn.ValeurDuFlux;
+// }
+// for (auto& cnxn: opt_runtime_data.weeklyOptimization.problemeHebdo_->ValeursDeNTC){
+//     for (auto& v: cnxn.ValeurDeNTCOrigineVersExtremite){
+//         v = v + 1;
+//     }
+//     for (auto& v: cnxn.ValeurDeNTCExtremiteVersOrigine){
+//         v = v + 1;
+//     }
+// }
 
+// // REDISPATCH
+// for (int hourInWeek: hoursRequiringCurtailmentSharing){
+//     for (uint32_t Interco = 0; Interco < problemeHebdo_->NombreDInterconnexions; ++Interco){
+//         int var = variableManager.NTCDirect(Interco, hourInWeek);
+//         auto& Xmax = problemeHebdo_->ProblemeAResoudre.get()->Xmax[Interco];// .Xmax[var] =
+//         1; auto& Xmin = problemeHebdo_->ProblemeAResoudre.get()->Xmin[Interco];// .Xmax[var]
+//         = 1;
 
+//         auto f = problemeHebdo_->ValeursDeNTC[Interco].ValeurDuFlux[Interco];//
+//         ->ValeurDeNTCOrigineVersExtremite[Interco].ValeurDeFlux; Xmax = f + 1; Xmin = f - 1;
+//         // auto c = b[Interco].ValeurDuFlux;
 
+//     }
+//     logs.info() << "[adq-patch] Hello NTCs";
 
+// }
 
+// // REDISPATCH OLD Flow cons
+// for (int hourInWeek: hoursRequiringCurtailmentSharing){
+//     for (uint32_t Interco = 0; Interco < problemeHebdo_->NombreDInterconnexions; ++Interco){
+//         // int var = variableManager.NTCDirect(Interco, hourInWeek);
+//         auto& Xmax = problemeHebdo_->ProblemeAResoudre.get()->Xmax[Interco];// .Xmax[var] =
+//         1; auto& Xmin = problemeHebdo_->ProblemeAResoudre.get()->Xmin[Interco];// .Xmax[var]
+//         = 1;
 
+//         auto f = problemeHebdo_->ValeursDeNTC[Interco].ValeurDuFlux[Interco];//
+//         ->ValeurDeNTCOrigineVersExtremite[Interco].ValeurDeFlux; Xmax = f + 1; Xmin = f - 1;
+//         // auto c = b[Interco].ValeurDuFlux;
 
+//     }
+//     logs.info() << "[adq-patch] Hello NTCs";
 
+// }
 
+// auto variableManager = VariableManagerFromProblemHebdo(problemeHebdo);
+// for (int pdtHebdo = PremierPdtDeLIntervalle, pdtJour = 0; pdtHebdo < DernierPdtDeLIntervalle;
+//      pdtHebdo++, pdtJour++)
+// {
+//     VALEURS_DE_NTC_ET_RESISTANCES& ValeursDeNTC = problemeHebdo->ValeursDeNTC[pdtHebdo];
 
+//     for (uint32_t interco = 0; interco < problemeHebdo->NombreDInterconnexions; interco++)
+//     {
+//         int var = variableManager.NTCDirect(interco, pdtJour);
+//         const COUTS_DE_TRANSPORT& CoutDeTransport = problemeHebdo->CoutDeTransport[interco];
 
+//         Xmax[var] = ValeursDeNTC.ValeurDeNTCOrigineVersExtremite[interco];
+//         Xmin[var] = -(ValeursDeNTC.ValeurDeNTCExtremiteVersOrigine[interco]);
 
+//         if (std::isinf(Xmax[var]) && Xmax[var] > 0)
+//         {
 
+//    logs.info()  << "After ADQP::";
+// for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
+// {
+//     // ens bef adqp
+//     std::vector<double> ENSAfter =
+//     problemeHebdo_->ResultatsHoraires[area].ValeursHorairesDeDefaillancePositive;
+//     std::vector<double> SpillAfter =
+//     problemeHebdo_->ResultatsHoraires[area].ValeursHorairesDeDefaillanceNegative;
 
-    // OPT_OptimisationHebdomadaire(opt_runtime_data.weeklyOptimization.options_,
-    //                              problemeHebdo_,
-    //                              opt_runtime_data.weeklyOptimization.writer_,
-    //                              opt_runtime_data.weeklyOptimization.simulationObserver_);
+//     if (problemeHebdo_->adequacyPatchRuntimeData->areaMode[area] ==
+//     Data::AdequacyPatch::physicalAreaInsideAdqPatch){
+//         logs.info() << area << "with ens / Spill:";
+//         for (uint h = 0; h < 5; ++h)
+//         {
+//             logs.info() <<  " :" << ENSAfter[h] <<" "<< SpillAfter[h];
+//         }
+//     }
+// }
 
+// // After the ADQP ran, we check if there is apparition de l'ENS, Spillage qq part
+// for (uint i = 0; i < nbHoursInWeek; ++i)
+// {
+//     int ENSBeforeAdqp = 0; // Adqp stands for Adequacy Patch
+//     int ENSAfterAdqp = 0;
+//     int SpillageBeforeAdqp = 0;
+//     int SpillageAfterAdqp = 0;
 
-
-    // opt_runtime_data.weeklyOptimization.solve();
-
-    // opt_runtime_data.weeklyOptimization.solve();
-
-
-
-
-    // for (auto& cnxn: opt_runtime_data.weeklyOptimization.problemeHebdo_->ValeursDeNTC){
-    //         logs.info() << "[adq-patch] Hello ValeurDeFlux AFTER adq is:"<<cnxn.ValeurDuFlux;
-    //         cnxn.ValeurDeNTCOrigineVersExtremite = cnxn.ValeurDuFlux;
-    //         cnxn.ValeurDeNTCExtremiteVersOrigine = cnxn.ValeurDuFlux;
-    // }
-    // for (auto& cnxn: opt_runtime_data.weeklyOptimization.problemeHebdo_->ValeursDeNTC){
-    //     for (auto& v: cnxn.ValeurDeNTCOrigineVersExtremite){
-    //         v = v + 1;
-    //     }
-    //     for (auto& v: cnxn.ValeurDeNTCExtremiteVersOrigine){
-    //         v = v + 1;
-    //     }
-    // }
-
-    // // REDISPATCH
-    // for (int hourInWeek: hoursRequiringCurtailmentSharing){
-    //     for (uint32_t Interco = 0; Interco < problemeHebdo_->NombreDInterconnexions; ++Interco){
-    //         int var = variableManager.NTCDirect(Interco, hourInWeek);
-    //         auto& Xmax = problemeHebdo_->ProblemeAResoudre.get()->Xmax[Interco];// .Xmax[var] =
-    //         1; auto& Xmin = problemeHebdo_->ProblemeAResoudre.get()->Xmin[Interco];// .Xmax[var]
-    //         = 1;
-
-    //         auto f = problemeHebdo_->ValeursDeNTC[Interco].ValeurDuFlux[Interco];//
-    //         ->ValeurDeNTCOrigineVersExtremite[Interco].ValeurDeFlux; Xmax = f + 1; Xmin = f - 1;
-    //         // auto c = b[Interco].ValeurDuFlux;
-
-    //     }
-    //     logs.info() << "[adq-patch] Hello NTCs";
-
-    // }
-
-    // // REDISPATCH OLD Flow cons
-    // for (int hourInWeek: hoursRequiringCurtailmentSharing){
-    //     for (uint32_t Interco = 0; Interco < problemeHebdo_->NombreDInterconnexions; ++Interco){
-    //         // int var = variableManager.NTCDirect(Interco, hourInWeek);
-    //         auto& Xmax = problemeHebdo_->ProblemeAResoudre.get()->Xmax[Interco];// .Xmax[var] =
-    //         1; auto& Xmin = problemeHebdo_->ProblemeAResoudre.get()->Xmin[Interco];// .Xmax[var]
-    //         = 1;
-
-    //         auto f = problemeHebdo_->ValeursDeNTC[Interco].ValeurDuFlux[Interco];//
-    //         ->ValeurDeNTCOrigineVersExtremite[Interco].ValeurDeFlux; Xmax = f + 1; Xmin = f - 1;
-    //         // auto c = b[Interco].ValeurDuFlux;
-
-    //     }
-    //     logs.info() << "[adq-patch] Hello NTCs";
-
-    // }
-
-    // auto variableManager = VariableManagerFromProblemHebdo(problemeHebdo);
-    // for (int pdtHebdo = PremierPdtDeLIntervalle, pdtJour = 0; pdtHebdo < DernierPdtDeLIntervalle;
-    //      pdtHebdo++, pdtJour++)
-    // {
-    //     VALEURS_DE_NTC_ET_RESISTANCES& ValeursDeNTC = problemeHebdo->ValeursDeNTC[pdtHebdo];
-
-    //     for (uint32_t interco = 0; interco < problemeHebdo->NombreDInterconnexions; interco++)
-    //     {
-    //         int var = variableManager.NTCDirect(interco, pdtJour);
-    //         const COUTS_DE_TRANSPORT& CoutDeTransport = problemeHebdo->CoutDeTransport[interco];
-
-    //         Xmax[var] = ValeursDeNTC.ValeurDeNTCOrigineVersExtremite[interco];
-    //         Xmin[var] = -(ValeursDeNTC.ValeurDeNTCExtremiteVersOrigine[interco]);
-
-    //         if (std::isinf(Xmax[var]) && Xmax[var] > 0)
-    //         {
-
-
-
-
-
-    //    logs.info()  << "After ADQP::";    
-    // for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
-    // {
-    //     // ens bef adqp
-    //     std::vector<double> ENSAfter = problemeHebdo_->ResultatsHoraires[area].ValeursHorairesDeDefaillancePositive;
-    //     std::vector<double> SpillAfter = problemeHebdo_->ResultatsHoraires[area].ValeursHorairesDeDefaillanceNegative;
-
-    //     if (problemeHebdo_->adequacyPatchRuntimeData->areaMode[area] == Data::AdequacyPatch::physicalAreaInsideAdqPatch){
-    //         logs.info() << area << "with ens / Spill:";
-    //         for (uint h = 0; h < 5; ++h)
-    //         {                
-    //             logs.info() <<  " :" << ENSAfter[h] <<" "<< SpillAfter[h];
-    //         }
-    //     }
-    // }
-
-
-
-
-    // // After the ADQP ran, we check if there is apparition de l'ENS, Spillage qq part
-    // for (uint i = 0; i < nbHoursInWeek; ++i)
-    // {
-    //     int ENSBeforeAdqp = 0; // Adqp stands for Adequacy Patch
-    //     int ENSAfterAdqp = 0;
-    //     int SpillageBeforeAdqp = 0;
-    //     int SpillageAfterAdqp = 0;
-
-    // }
+// }
