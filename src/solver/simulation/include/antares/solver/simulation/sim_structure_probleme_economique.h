@@ -379,8 +379,6 @@ struct RESULTATS_HORAIRES
     std::vector<double> CoutsMarginauxHorairesCSR;
     std::vector<PRODUCTION_THERMIQUE_OPTIMALE> ProductionThermique; // index is pdtHebdo
 
-    std::vector<double> NetPositionHoraire;
-
     std::vector<::ShortTermStorage::RESULTS> ShortTermStorage;
 };
 
