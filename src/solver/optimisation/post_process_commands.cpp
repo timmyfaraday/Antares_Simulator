@@ -579,12 +579,12 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
         // double solCost = problemeHebdo_->coutOptimalSolution2[numeroDeLIntervalle];
         // return Probleme->coutOptimalSolution2[NumeroDeLIntervalle];
 
-        // } // ENS REDISPATCH
+        // } // ENS REDISPATCH //
     } // END REDISPATCH IF SET Affected non empty
 
     // OUTPUTTING DATA HERE
-    // double solCostRedisp = problemeHebdo_->coutOptimalSolution2[0];
-    // logs.info() << " optCostRedisp : "<< solCostRedisp;
+    double solCostRedisp = problemeHebdo_->coutOptimalSolution2[0];
+    logs.info() << " optCostRedisp : "<< solCostRedisp;
 
     // std::vector<std::vector<double>> finalFlows(nbHoursInWeek,
     // std::vector<double>(problemeHebdo_->NombreDInterconnexions)); for (uint hour = 0; hour <
@@ -619,11 +619,11 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
     //     }
     // }
 
-    // u_int32_t mcy = problemeHebdo_->year;
+    // uint32_t mcy = problemeHebdo_->year;
     // logs.info() << "[adq-patch] mcY "<<mcy;
     // const uint32_t NBHoursInAYear = 364 * 24; // 364
-    //     // fileG1:
-    //     // 1. Define the dump file path in your build/run folder
+        // fileG1:
+        // 1. Define the dump file path in your build/run folder
 
     // std::string dumpFile =
     // "/home/alzoobiali/Desktop/Redispatch/intermediateResults/ENSdispatch.csv";
@@ -633,8 +633,8 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
     // ofsDispatch << "MCyear\thour\ttimeID\tUtimeID\tarea\tareaName\tENS\tSpill\tDtgMrg\n";
     // for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area) {
     //     std::string areaName = problemeHebdo_->NomsDesPays[area];
-    //     // std::string areaName = getAreaName(area); // Replace with your method to get area
-    //     names for (uint h = 0; h < nbHoursInWeek; ++h) {
+    //     // std::string areaName = getAreaName(area); // Replace with your method to get areanames
+    //     for (uint h = 0; h < nbHoursInWeek; ++h) {
     //         if (ENSBef[area][h] > 0 && areaName < "v") {
     //             uint32_t timeId = h + week * 168;
     //             uint32_t uniqueTimeId = NBHoursInAYear*mcy + timeId;
@@ -654,42 +654,375 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
     // // 4. Close the file when done
     // ofsDispatch.close();
 
-    // // FileG2
-    // // 1. Define the dump file path in your build/run folder
-    // std::string dumpFile2 =
-    // "/home/alzoobiali/Desktop/Redispatch/intermediateResults/ENSAdequacyPatch.csv";
-    // // 2. Open the file (overwrite or append as you wish)
-    // std::ofstream ofsAdequacyPatch(dumpFile2, std::ios::app /* or std::ios::app */);
-    // ofsAdequacyPatch << "MCyear\thour\ttimeID\tUtimeID\tarea\tareaName\tENS\tSpill\tDtgMrg\n";
+        // FileG1 RELATIVE:
 
-    // for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area) {
-    //     std::string areaName = problemeHebdo_->NomsDesPays[area];
-    //     // std::string areaName = getAreaName(area); // Replace with your method to get area
-    //     names for (uint h = 0; h < nbHoursInWeek; ++h) {
-    //         if (ENSAfter[area][h] > 0 && areaName < "v") {
-    //             uint32_t timeId = h + week * 168;
-    //             uint32_t uniqueTimeId = NBHoursInAYear*mcy + timeId;
-    //             ofsAdequacyPatch << mcy << "\t"
-    //                 << h << "\t"
-    //                 << timeId << "\t"
-    //                 << uniqueTimeId << "\t"
-    //                 << area << "\t"
-    //                 << areaName << "\t"
-    //                 << std::fixed << std::setprecision(3) << ENSAfter[area][h] << "\t"
-    //                 << std::fixed << std::setprecision(3) << SpillAfter[area][h] << "\t"
-    //                 << std::fixed << std::setprecision(3) << dtgMrgBef[area][h] << "\n"; // it is
-    //                 fine
-    //         }
-    //     }
-    // }
-    // // 4. Close the file when done
-    // ofsAdequacyPatch.close();
 
-    // // DispatchableMarginPostProcessCmd
-    // // std::vector<uint32_t> dummyAreas(problemeHebdo_->NombreDePays);
-    // // std::iota(dummyAreas.begin(), dummyAreas.end(), 0);
-    // DispatchableMarginPostProcessCmd dispatchableMarginCmd(problemeHebdo_, numSpace_,
-    // area_list_); dispatchableMarginCmd.execute(opt_runtime_data);
+
+    // ===========================================================
+    // FileG1 RELATIVE: Write ENS dispatch data into output folder
+    // ===========================================================
+
+    // // -- Simulation metadata
+    // uint32_t mcy = problemeHebdo_->year;
+    // logs.info() << "[adq-patch] MCyear " << mcy;
+
+    // const uint32_t NBHoursInAYear = 364 * 24;
+
+    // --------------------------------------------
+    // 1. Prepare CSV buffer in memory
+    // --------------------------------------------
+    uint32_t mcy = problemeHebdo_->year;
+    logs.info() << "[adq-patch] mcY "<<mcy;
+    const uint32_t NBHoursInAYear = 364 * 24; // 364
+    
+    std::ostringstream oss;
+    oss << "MCyear\thour\ttimeID\tUtimeID\tarea\tareaName\tENS\tSpill\tDtgMrg\n";
+
+    for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
+    {
+        std::string areaName = problemeHebdo_->NomsDesPays[area];
+
+        for (uint h = 0; h < nbHoursInWeek; ++h)
+        {
+            if (ENSBef[area][h] > 0 && areaName < "v")
+            {
+                uint32_t timeId = h + week * 168;
+                uint32_t uniqueTimeId = NBHoursInAYear * mcy + timeId;
+
+                oss << mcy << "\t"
+                    << h << "\t"
+                    << timeId << "\t"
+                    << uniqueTimeId << "\t"
+                    << area << "\t"
+                    << areaName << "\t"
+                    << std::fixed << std::setprecision(3) << ENSBef[area][h] << "\t"
+                    << std::fixed << std::setprecision(3) << SpillBef[area][h] << "\t"
+                    << std::fixed << std::setprecision(3) << dtgMrgBef[area][h] << "\n";
+            }
+        }
+    }
+
+    // // --------------------------------------------
+    // // 2. Send to Antares result writer
+    // // --------------------------------------------
+
+    // // Access the result writer object (not a pointer)
+    auto& resultWriter = opt_runtime_data.weeklyOptimization.writer_;
+    std::string writeBuffer = oss.str();
+    // resultWriter.addEntryFromBuffer(entryPath, writeBuffer);
+
+    // logs.info() << "[adq-patch] Wrote ENSdispatch.csv into study results.";
+
+    // ===========================================================
+    // 2. Send to Antares result writer (append mode, in-memory buffer)
+    // ===========================================================
+
+    // Static accumulator buffer for all dispatch writes
+    static std::ostringstream dispatchBuffer;
+
+    // Append new content to the shared buffer
+    dispatchBuffer << oss.str();
+
+    // If we decide to flush at the end of this phase (e.g. last week or post-loop)
+    {
+        auto& resultWriter = opt_runtime_data.weeklyOptimization.writer_;
+        std::filesystem::path entryPath = "intermediateResults/OutputDispatch.csv";
+
+        // Convert the accumulated buffer to string once
+        std::string writeBuffer = dispatchBuffer.str();
+
+        // Write it into the results archive
+        resultWriter.addEntryFromBuffer(entryPath, writeBuffer);
+
+        logs.info() << "[adq-patch] Appended OutputDispatch.csv into study results.";
+
+        // Optional: clear buffer if you only want a single write per simulation
+        // dispatchBuffer.str("");
+        // dispatchBuffer.clear();
+    }
+
+    // ===========================================================
+    // END FileG1 RELATIVE: Write ENS dispatch data into output folder
+    // ===========================================================
+
+
+
+    // ===========================================================
+    // FileG2 RELATIVE: Write another ENS dispatch data into output folder
+    // ===========================================================
+
+    // --------------------------------------------
+    // 1. Prepare CSV buffer in memory
+    // --------------------------------------------
+    // uint32_t mcy = problemeHebdo_->year;
+    // logs.info() << "[adq-patch][FileG2] mcY " << mcy;
+    // const uint32_t NBHoursInAYear = 364 * 24; // 364 days * 24 hours
+
+    std::ostringstream ossG2;
+    ossG2 << "MCyear\thour\ttimeID\tUtimeID\tarea\tareaName\tENS\tSpill\tDtgMrg\n";
+
+    for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
+    {
+        std::string areaName = problemeHebdo_->NomsDesPays[area];
+
+        for (uint h = 0; h < nbHoursInWeek; ++h)
+        {
+            // Example filter (can adjust based on FileG2 semantics)
+            if (ENSAfter[area][h] > 0 && areaName < "v")
+            {
+                uint32_t timeId = h + week * 168;
+                uint32_t uniqueTimeId = NBHoursInAYear * mcy + timeId;
+
+                ossG2 << mcy << "\t"
+                    << h << "\t"
+                    << timeId << "\t"
+                    << uniqueTimeId << "\t"
+                    << area << "\t"
+                    << areaName << "\t"
+                    << std::fixed << std::setprecision(3) << ENSAfter[area][h] << "\t"
+                    << std::fixed << std::setprecision(3) << SpillAfter[area][h] << "\t"
+                    << std::fixed << std::setprecision(3) << dtgMrgBef[area][h] << "\n"; // same as dtgMrgBefore 
+            }
+        }
+    }
+
+    // ===========================================================
+    // 2. Send to Antares result writer (append mode, in-memory buffer)
+    // ===========================================================
+
+    // Static accumulator buffer for all G2 dispatch writes
+    static std::ostringstream dispatchBufferG2;
+
+    // Append new content to the shared buffer
+    dispatchBufferG2 << ossG2.str();
+
+    // Flush accumulated content into study results (end-of-phase or post-loop)
+    {
+        auto& resultWriter = opt_runtime_data.weeklyOptimization.writer_;
+        std::filesystem::path entryPath = "intermediateResults/OutputADQPatch.csv";
+
+        // Convert accumulated buffer to string
+        std::string writeBuffer = dispatchBufferG2.str();
+
+        // Write it into the results archive
+        resultWriter.addEntryFromBuffer(entryPath, writeBuffer);
+
+        logs.info() << "[adq-patch][FileG2] Appended OutputADQPatch.csv into study results.";
+
+        // Optional: clear buffer if you only want a single write per simulation
+        // dispatchBufferG2.str("");
+        // dispatchBufferG2.clear();
+    }
+
+    // ===========================================================
+    // END FileG2 RELATIVE: Write ENS dispatch data into output folder
+    // ===========================================================
+
+
+
+    // ===========================================================
+    // FileG3 RELATIVE: Write ENS Redispatch data into output folder
+    // ===========================================================
+
+    // --------------------------------------------
+    // 1. Extract Redispatch data
+    // --------------------------------------------
+    for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
+    {
+        ENSRedispatch[area] =
+            problemeHebdo_->ResultatsHoraires[area].ValeursHorairesDeDefaillancePositive;
+        SpillRedispatch[area] =
+            problemeHebdo_->ResultatsHoraires[area].ValeursHorairesDeDefaillanceNegative;
+
+        const auto& scratchpad = area_list_[area]->scratchpad[numSpace_];
+        dtgMrgRedispatch[area] = std::vector<double>(
+            std::begin(scratchpad.dispatchableGenerationMargin),
+            std::end(scratchpad.dispatchableGenerationMargin));
+    }
+
+    // --------------------------------------------
+    // 2. Prepare in-memory CSV buffer
+    // --------------------------------------------
+    // uint32_t mcy = problemeHebdo_->year;
+    // logs.info() << "[adq-patch][FileG3] mcY " << mcy;
+
+    // const uint32_t NBHoursInAYear = 364 * 24; // 364 days * 24 hours
+
+    std::ostringstream ossRedispatch;
+    ossRedispatch << "MCyear\thour\ttimeID\tUtimeID\tarea\tareaName\tENS\tSpill\tDtgMrg\n";
+
+    for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
+    {
+        const std::string& areaName = problemeHebdo_->NomsDesPays[area];
+
+        for (uint h = 0; h < nbHoursInWeek; ++h)
+        {
+            if (ENSRedispatch[area][h] > 0 && areaName < "v")
+            {
+                uint32_t timeId = h + week * 168;
+                uint32_t uniqueTimeId = NBHoursInAYear * mcy + timeId;
+
+                ossRedispatch << mcy << "\t"
+                            << h << "\t"
+                            << timeId << "\t"
+                            << uniqueTimeId << "\t"
+                            << area << "\t"
+                            << areaName << "\t"
+                            << std::fixed << std::setprecision(3) << ENSRedispatch[area][h] << "\t"
+                            << std::fixed << std::setprecision(3) << SpillRedispatch[area][h] << "\t"
+                            << std::fixed << std::setprecision(3) << dtgMrgRedispatch[area][h] << "\n";
+            }
+        }
+    }
+
+    // ===========================================================
+    // 3. Send to Antares result writer (append mode, in-memory buffer)
+    // ===========================================================
+
+    // Static accumulator buffer for all Redispatch writes
+    static std::ostringstream redispatchBuffer;
+
+    // Append new content to the shared buffer
+    redispatchBuffer << ossRedispatch.str();
+
+    // Flush accumulated content into study results (end-of-phase or post-loop)
+    {
+        auto& resultWriter = opt_runtime_data.weeklyOptimization.writer_;
+        std::filesystem::path entryPathRedisp = "intermediateResults/OutputRedispatch.csv";
+
+        // Convert accumulated buffer to string
+        std::string writeBuffer = redispatchBuffer.str();
+
+        // Write to Antares results archive
+        resultWriter.addEntryFromBuffer(entryPathRedisp, writeBuffer);
+
+        logs.info() << "[adq-patch][FileG3] Appended OutputRedispatch.csv into study results.";
+
+        // Optional: clear buffer if you only want a single write per simulation
+        // redispatchBuffer.str("");
+        // redispatchBuffer.clear();
+    }
+
+    // ===========================================================
+    // END FileG3 RELATIVE: Write ENS Redispatch data into output folder
+    // ===========================================================
+
+
+
+
+
+    // ===========================================================
+    // FileG4 RELATIVE: Compute and write costs + warnings
+    // ===========================================================
+
+    // --------------------------------------------
+    // 1. Compute total ENS and cost metrics
+    // --------------------------------------------
+    double sumEnsDisp = 0.0;
+    double sumEnsAdqp = 0.0;
+    double sumEnsRedisp = 0.0;
+
+    // Sum ENS values for dispatchable and adequacy
+    for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
+    {
+        for (uint h = 0; h < nbHoursInWeek; ++h)
+        {
+            bool includeArea = std::string(problemeHebdo_->NomsDesPays[area]) < "v";
+            if (includeArea)
+            {
+                sumEnsDisp += ENSBef[area][h];
+                sumEnsAdqp += ENSAfter[area][h];
+                sumEnsRedisp += ENSRedispatch[area][h];
+            }
+        }
+    }
+
+    double solCostAdqP = solCostDisp + 4000.0 * (sumEnsAdqp - sumEnsDisp);
+
+    // --------------------------------------------
+    // 2. Prepare warnings (append mode)
+    // --------------------------------------------
+    static std::ostringstream warningAccum;
+
+    if (solCostAdqP != solCostDisp)
+    {
+        warningAccum << "[Redispatch-CostCheck] Diff cost cool: "
+                    << "disp = " << solCostDisp << ", adqp = " << solCostAdqP
+                    << " (year=" << year << ", week=" << week << ")\n";
+        logs.warning() << "[adq-patch][FileG4] Cost difference detected.";
+    }
+
+    if (solCostAdqP < solCostDisp - 3)
+    {
+        warningAccum << "[Redispatch-CostCheck] Unexpectedly low adqpatch cost: "
+                    << "disp = " << solCostDisp << ", adqp = " << solCostAdqP
+                    << " (year=" << year << ", week=" << week << ")\n";
+        logs.warning() << "[adq-patch][FileG4] Unexpectedly low adqpatch cost.";
+    }
+
+    if (solCostRedisp < solCostDisp - 3)
+    {
+        warningAccum << "[Redispatch-CostCheck] Unexpectedly low redispatch cost: "
+                    << "disp = " << solCostDisp << ", redisp = " << solCostRedisp
+                    << " (year=" << year << ", week=" << week << ")\n";
+        logs.warning() << "[adq-patch][FileG4] Unexpectedly low redispatch cost.";
+    }
+
+    // --------------------------------------------
+    // 3. Prepare cost buffer (append mode)
+    // --------------------------------------------
+    static std::ostringstream costAccum;
+
+    if (costAccum.tellp() == 0)
+    {
+        // Write header only once
+        costAccum << "Year\tWeek\tSolCostDisp\tSolCostAdqP\tSolCostRedispatch\tSumENSDisp\tSumENSAdqp\tSumENSRedisp\n";
+    }
+
+    costAccum << year << "\t"
+            << week << "\t"
+            << std::fixed << std::setprecision(6)
+            << solCostDisp << "\t"
+            << solCostAdqP << "\t"
+            << solCostRedisp << "\t"
+            << sumEnsDisp << "\t"
+            << sumEnsAdqp << "\t"
+            << sumEnsRedisp << "\n";
+            
+
+    // --------------------------------------------
+    // 4. Flush buffers to Antares results (append mode)
+    // --------------------------------------------
+
+    // (You may move this flush to the end of the main simulation loop)
+    {
+        auto& resultWriter = opt_runtime_data.weeklyOptimization.writer_;
+
+        // --- Write warnings ---
+        std::filesystem::path warningPath = "intermediateResults/warning.txt";
+        std::string warningStr = warningAccum.str();
+        resultWriter.addEntryFromBuffer(warningPath, warningStr);
+
+        // --- Write cost table ---
+        std::filesystem::path costPath = "intermediateResults/Cost.csv";
+        std::string costStr = costAccum.str();
+        resultWriter.addEntryFromBuffer(costPath, costStr);
+
+        logs.info() << "[adq-patch][FileG4] Appended Cost.csv and warning.txt into study results.";
+
+        // Optional: clear if single-write policy per run
+        // warningAccum.str("");
+        // warningAccum.clear();
+        // costAccum.str("");
+        // costAccum.clear();
+    }
+
+    // ===========================================================
+    // END FileG4 RELATIVE: Compute and write costs + warnings
+    // ===========================================================
+
+
+
 
     // //FileG3
     // // extracting data:
@@ -713,8 +1046,8 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
 
     // for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area) {
     //     std::string areaName = problemeHebdo_->NomsDesPays[area];
-    //     // std::string areaName = getAreaName(area); // Replace with your method to get area
-    //     names for (uint h = 0; h < nbHoursInWeek; ++h) {
+    //     // std::string areaName = getAreaName(area); // Replace with your method to get area names
+    //     for (uint h = 0; h < nbHoursInWeek; ++h) {
     //         if (ENSRedispatch[area][h] > 0 && areaName < "v") {
     //             uint32_t timeId = h + week * 168;
     //             uint32_t uniqueTimeId = NBHoursInAYear*mcy + timeId;
@@ -733,6 +1066,13 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
 
     // // 4. Close the file when done
     // ofsRedispatch.close();
+
+
+
+
+
+
+
 
     // double sumEnsDisp = 0.0;
     // double sumEnsAdqp = 0.0;
@@ -763,11 +1103,11 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
     // "/home/alzoobiali/Desktop/Redispatch/intermediateResults/Cost.csv";
     //  // 2. Open the file (overwrite or append as you wish)
     // std::ofstream ofsCost(dumpFileCost, std::ios::app);
-    // // ofsCost << "MCyear\thour\ttimeID\tUtimeID\tarea\tareaName\tENS\tSpill\tDtgMrg\n";
+    // ofsCost << "MCyear\thour\ttimeID\tUtimeID\tarea\tareaName\tENS\tSpill\tDtgMrg\n";
     // ofsCost << std::fixed << std::setprecision(15);  // Use enough precision to capture full
-    // double value
+    // double value;
 
-    // // ofsCost << solCostDisp << "\t" << solCostRedisp << "\n";
+    // ofsCost << solCostDisp << "\t" << solCostRedisp << "\n";
     // ofsCost << year << "\t"
     //     << week << "\t"
     //     << solCostDisp << "\t"

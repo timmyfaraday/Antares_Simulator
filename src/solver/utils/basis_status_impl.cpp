@@ -40,7 +40,7 @@ namespace Antares::Optimization
 {
 void BasisStatusImpl::setStartingBasis(operations_research::MPSolver* solver) const
 {
-    solver->SetStartingLpBasis(StatutDesVariables, StatutDesContraintes);
+    // solver->SetStartingLpBasis(StatutDesVariables, StatutDesContraintes);
 }
 
 void BasisStatusImpl::extractBasis(const operations_research::MPSolver* solver)
