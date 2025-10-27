@@ -165,15 +165,6 @@ int& VariableManager::ShortTermStorageCostVariationWithdrawal(unsigned int index
       .SIM_ShortTermStorage.CostVariationWithdrawal[index];
 }
 
-int& VariableManager::NetPosition(unsigned int index,
-                                  unsigned int hourInWeek,
-                                  int offset,
-                                  int delta)
-{
-    auto pdt = GetShiftedTimeStep(offset, delta, hourInWeek);
-    return CorrespondanceVarNativesVarOptim_[pdt].NumeroDeVariableNetPosition[index];
-}
-
 int& VariableManager::HydProd(unsigned int index, unsigned int hourInWeek, int offset, int delta)
 {
     auto pdt = GetShiftedTimeStep(offset, delta, hourInWeek);

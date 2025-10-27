@@ -49,7 +49,6 @@ struct CORRESPONDANCES_DES_VARIABLES
 
     std::vector<int> NumeroDeVariableDuPalierThermique;
 
-    std::vector<int> NumeroDeVariableNetPosition;
     std::vector<int> NumeroDeVariablesDeLaProdHyd;
 
     std::vector<int> NumeroDeVariablesDePompage;
