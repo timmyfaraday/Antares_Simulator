@@ -35,15 +35,6 @@ AreaBalanceData Group1::GetAreaBalanceData()
             .ShortTermStorage = problemeHebdo_->ShortTermStorage};
 }
 
-NetPositionData Group1::GetNetPositionData()
-{
-    return {.CorrespondanceCntNativesCntOptim = problemeHebdo_->CorrespondanceCntNativesCntOptim,
-            .IndexDebutIntercoOrigine = problemeHebdo_->IndexDebutIntercoOrigine,
-            .IndexSuivantIntercoOrigine = problemeHebdo_->IndexSuivantIntercoOrigine,
-            .IndexDebutIntercoExtremite = problemeHebdo_->IndexDebutIntercoExtremite,
-            .IndexSuivantIntercoExtremite = problemeHebdo_->IndexSuivantIntercoExtremite};
-}
-
 FictitiousLoadData Group1::GetFictitiousLoadData()
 {
     return {.CorrespondanceCntNativesCntOptim = problemeHebdo_->CorrespondanceCntNativesCntOptim,
@@ -88,9 +79,6 @@ void Group1::BuildConstraints()
     auto areaBalanceData = GetAreaBalanceData();
     AreaBalance areaBalance(builder_, areaBalanceData);
 
-    auto netPositionData = GetNetPositionData();
-    NetPosition netPosition(builder_, netPositionData);
-
     auto fictitiousLoadData = GetFictitiousLoadData();
     FictitiousLoad fictitiousLoad(builder_, fictitiousLoadData);
 
@@ -128,7 +116,6 @@ void Group1::BuildConstraints()
         for (uint32_t pays = 0; pays < problemeHebdo_->NombreDePays; pays++)
         {
             areaBalance.add(pdt, pays);
-            netPosition.add(pdt, pays);
             fictitiousLoad.add(pdt, pays);
             shortTermStorageLevel.add(pdt, pays);
             shortTermStorageCostVariationInjectionBackward.add(pdt, pays);

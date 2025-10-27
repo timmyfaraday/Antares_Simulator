@@ -198,11 +198,6 @@ void VariableNamer::ShortTermStorageCostVariationWithdrawal(unsigned int variabl
     SetShortTermStorageVariableName(variable, "CostVariationWithdrawal", shortTermStorageName);
 }
 
-void VariableNamer::NetPosition(unsigned int constraint)
-{
-    SetAreaElementNameHour(constraint, "NetPositionVariable");
-}
-
 void VariableNamer::HydProd(unsigned int variable)
 {
     SetAreaElementNameHour(variable, "HydProd");
@@ -284,11 +279,6 @@ void ConstraintNamer::CsrAreaBalance(unsigned int constraint)
 void ConstraintNamer::AreaBalance(unsigned int constraint)
 {
     SetAreaElementNameHour(constraint, "AreaBalance");
-}
-
-void ConstraintNamer::NetPosition(unsigned int constraint)
-{
-    SetAreaElementNameHour(constraint, "NetPositionConstraint");
 }
 
 void ConstraintNamer::FictiveLoads(unsigned int constraint)

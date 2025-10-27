@@ -44,9 +44,22 @@ void AreaBalance::add(int pdt, int pays)
 
     builder.updateHourWithinWeek(pdt);
 
+    int interco = data.IndexDebutIntercoOrigine[pays];
+    while (interco >= 0)
+    {
+        builder.NTCDirect(interco, 1.0);
+        interco = data.IndexSuivantIntercoOrigine[interco];
+    }
+
+    interco = data.IndexDebutIntercoExtremite[pays];
+    while (interco >= 0)
+    {
+        builder.NTCDirect(interco, -1.0);
+        interco = data.IndexSuivantIntercoExtremite[interco];
+    }
+
     ExportPaliers(data.PaliersThermiquesDuPays[pays], builder);
-    builder.NetPosition(pays, 1)
-      .HydProd(pays, -1.0)
+    builder.HydProd(pays, -1.0)
       .Pumping(pays, 1.0)
       .PositiveUnsuppliedEnergy(pays, -1.0)
       .NegativeUnsuppliedEnergy(pays, 1.0);

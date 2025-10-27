@@ -89,7 +89,6 @@ void OPT_ConstruireLaListeDesVariablesOptimiseesDuProblemeLineaire(PROBLEME_HEBD
             // NetPosition
             ProblemeAResoudre->TypeDeVariable[NombreDeVariables] = VARIABLE_NON_BORNEE;
             variableManager.NetPosition(pays, pdt) = NombreDeVariables;
-            variableNamer.NetPosition(NombreDeVariables);
             NombreDeVariables++;
 
             for (const auto& storage: problemeHebdo->ShortTermStorage[pays])

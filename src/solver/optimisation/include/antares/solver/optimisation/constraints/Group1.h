@@ -25,7 +25,6 @@
 #include "ConstraintGroup.h"
 #include "FictitiousLoad.h"
 #include "FlowDissociation.h"
-#include "NetPosition.h"
 #include "ShortTermStorageLevel.h"
 
 class Group1 final: public ConstraintGroup
@@ -37,7 +36,6 @@ public:
 
 private:
     AreaBalanceData GetAreaBalanceData();
-    NetPositionData GetNetPositionData();
     FictitiousLoadData GetFictitiousLoadData();
     ShortTermStorageData GetShortTermStorageData();
 
