@@ -586,75 +586,6 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
     double solCostRedisp = problemeHebdo_->coutOptimalSolution2[0];
     logs.info() << " optCostRedisp : "<< solCostRedisp;
 
-    // std::vector<std::vector<double>> finalFlows(nbHoursInWeek,
-    // std::vector<double>(problemeHebdo_->NombreDInterconnexions)); for (uint hour = 0; hour <
-    // nbHoursInWeek; ++hour){
-    //     for (uint32_t interco = 0; interco < problemeHebdo_->NombreDInterconnexions; ++interco){
-    //         finalFlows[hour][interco] = problemeHebdo_->ValeursDeNTC[hour].ValeurDuFlux[interco];
-    //     }
-    // }
-
-    // double tolerance = 1; // should be smaller than your bounds (0.1)
-    // for (uint hour = 0; hour < nbHoursInWeek; ++hour){
-    //     for (uint32_t interco = 0; interco < problemeHebdo_->NombreDInterconnexions; ++interco){
-    //         double expected = fixedFlows[hour][interco];
-    //         double finale = finalFlows[hour][interco];
-    //         double initial = InitialFlows[hour][interco];
-    //         if (std::abs(finale - expected) > tolerance /*&& expected > 1*/){
-    //             std::ostringstream msg;
-    //             msg << "[Redispatch-FlowCheck] Flow mismatch at hour " << hour
-    //                 << ", interco " << interco
-    //                 << ": initial " << initial << ", fixed " << expected
-    //                 << ", while final " << finale;
-
-    //             logs.warning() << msg.str();  // Log to system
-    //             // Also write to file called "warning"
-    //             std::ofstream
-    //             warningFile("/home/alzoobiali/Desktop/Redispatch/intermediateResults/warning",
-    //             std::ios::app);  // Open in append mode if (warningFile.is_open()) {
-    //                 warningFile << msg.str() << std::endl;
-    //             }
-    //         }
-
-    //     }
-    // }
-
-    // uint32_t mcy = problemeHebdo_->year;
-    // logs.info() << "[adq-patch] mcY "<<mcy;
-    // const uint32_t NBHoursInAYear = 364 * 24; // 364
-        // fileG1:
-        // 1. Define the dump file path in your build/run folder
-
-    // std::string dumpFile =
-    // "/home/alzoobiali/Desktop/Redispatch/intermediateResults/ENSdispatch.csv";
-
-    // // 2. Open the file (overwrite or append as you wish)
-    // std::ofstream ofsDispatch(dumpFile, std::ios::app /* or std::ios::app */);
-    // ofsDispatch << "MCyear\thour\ttimeID\tUtimeID\tarea\tareaName\tENS\tSpill\tDtgMrg\n";
-    // for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area) {
-    //     std::string areaName = problemeHebdo_->NomsDesPays[area];
-    //     // std::string areaName = getAreaName(area); // Replace with your method to get areanames
-    //     for (uint h = 0; h < nbHoursInWeek; ++h) {
-    //         if (ENSBef[area][h] > 0 && areaName < "v") {
-    //             uint32_t timeId = h + week * 168;
-    //             uint32_t uniqueTimeId = NBHoursInAYear*mcy + timeId;
-    //             ofsDispatch << mcy << "\t"
-    //                 << h << "\t"
-    //                 << timeId << "\t"
-    //                 << uniqueTimeId << "\t"
-    //                 << area << "\t"
-    //                 << areaName << "\t"
-    //                 << std::fixed << std::setprecision(3) << ENSBef[area][h] << "\t"
-    //                 << std::fixed << std::setprecision(3) << SpillBef[area][h] << "\t"
-    //                 << std::fixed << std::setprecision(3) << dtgMrgBef[area][h] << "\n";
-    //         }
-    //     }
-    // }
-
-    // // 4. Close the file when done
-    // ofsDispatch.close();
-
-        // FileG1 RELATIVE:
 
 
 
@@ -684,7 +615,7 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
 
         for (uint h = 0; h < nbHoursInWeek; ++h)
         {
-            if (ENSBef[area][h] > 0 && areaName < "v")
+            if (ENSBef[area][h] > 0  )
             {
                 uint32_t timeId = h + week * 168;
                 uint32_t uniqueTimeId = NBHoursInAYear * mcy + timeId;
@@ -768,7 +699,7 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
         for (uint h = 0; h < nbHoursInWeek; ++h)
         {
             // Example filter (can adjust based on FileG2 semantics)
-            if (ENSAfter[area][h] > 0 && areaName < "v")
+            if (ENSAfter[area][h] > 0  )
             {
                 uint32_t timeId = h + week * 168;
                 uint32_t uniqueTimeId = NBHoursInAYear * mcy + timeId;
@@ -857,7 +788,7 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
 
         for (uint h = 0; h < nbHoursInWeek; ++h)
         {
-            if (ENSRedispatch[area][h] > 0 && areaName < "v")
+            if (ENSRedispatch[area][h] > 0  )
             {
                 uint32_t timeId = h + week * 168;
                 uint32_t uniqueTimeId = NBHoursInAYear * mcy + timeId;
@@ -1024,6 +955,77 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
 
 
 
+
+    /* old comment */
+    // std::vector<std::vector<double>> finalFlows(nbHoursInWeek,
+    // std::vector<double>(problemeHebdo_->NombreDInterconnexions)); for (uint hour = 0; hour <
+    // nbHoursInWeek; ++hour){
+    //     for (uint32_t interco = 0; interco < problemeHebdo_->NombreDInterconnexions; ++interco){
+    //         finalFlows[hour][interco] = problemeHebdo_->ValeursDeNTC[hour].ValeurDuFlux[interco];
+    //     }
+    // }
+
+    // double tolerance = 1; // should be smaller than your bounds (0.1)
+    // for (uint hour = 0; hour < nbHoursInWeek; ++hour){
+    //     for (uint32_t interco = 0; interco < problemeHebdo_->NombreDInterconnexions; ++interco){
+    //         double expected = fixedFlows[hour][interco];
+    //         double finale = finalFlows[hour][interco];
+    //         double initial = InitialFlows[hour][interco];
+    //         if (std::abs(finale - expected) > tolerance /*&& expected > 1*/){
+    //             std::ostringstream msg;
+    //             msg << "[Redispatch-FlowCheck] Flow mismatch at hour " << hour
+    //                 << ", interco " << interco
+    //                 << ": initial " << initial << ", fixed " << expected
+    //                 << ", while final " << finale;
+
+    //             logs.warning() << msg.str();  // Log to system
+    //             // Also write to file called "warning"
+    //             std::ofstream
+    //             warningFile("/home/alzoobiali/Desktop/Redispatch/intermediateResults/warning",
+    //             std::ios::app);  // Open in append mode if (warningFile.is_open()) {
+    //                 warningFile << msg.str() << std::endl;
+    //             }
+    //         }
+
+    //     }
+    // }
+
+    // uint32_t mcy = problemeHebdo_->year;
+    // logs.info() << "[adq-patch] mcY "<<mcy;
+    // const uint32_t NBHoursInAYear = 364 * 24; // 364
+        // fileG1:
+        // 1. Define the dump file path in your build/run folder
+
+    // std::string dumpFile =
+    // "/home/alzoobiali/Desktop/Redispatch/intermediateResults/ENSdispatch.csv";
+
+    // // 2. Open the file (overwrite or append as you wish)
+    // std::ofstream ofsDispatch(dumpFile, std::ios::app /* or std::ios::app */);
+    // ofsDispatch << "MCyear\thour\ttimeID\tUtimeID\tarea\tareaName\tENS\tSpill\tDtgMrg\n";
+    // for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area) {
+    //     std::string areaName = problemeHebdo_->NomsDesPays[area];
+    //     // std::string areaName = getAreaName(area); // Replace with your method to get areanames
+    //     for (uint h = 0; h < nbHoursInWeek; ++h) {
+    //         if (ENSBef[area][h] > 0 && areaName < "v") {
+    //             uint32_t timeId = h + week * 168;
+    //             uint32_t uniqueTimeId = NBHoursInAYear*mcy + timeId;
+    //             ofsDispatch << mcy << "\t"
+    //                 << h << "\t"
+    //                 << timeId << "\t"
+    //                 << uniqueTimeId << "\t"
+    //                 << area << "\t"
+    //                 << areaName << "\t"
+    //                 << std::fixed << std::setprecision(3) << ENSBef[area][h] << "\t"
+    //                 << std::fixed << std::setprecision(3) << SpillBef[area][h] << "\t"
+    //                 << std::fixed << std::setprecision(3) << dtgMrgBef[area][h] << "\n";
+    //         }
+    //     }
+    // }
+
+    // // 4. Close the file when done
+    // ofsDispatch.close();
+
+        // FileG1 RELATIVE:
     // //FileG3
     // // extracting data:
     // for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area){
@@ -1147,6 +1149,7 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
     // }
 
     //
+    
 
 } // END CSR
 
