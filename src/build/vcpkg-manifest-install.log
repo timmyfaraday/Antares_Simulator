@@ -1,0 +1,322 @@
+Fetching registry information from https://github.com/microsoft/vcpkg (HEAD)...
+Fetching registry information from https://github.com/AntaresSimulatorTeam/antares-vcpkg-registry (HEAD)...
+Detecting compiler hash for triplet x64-linux...
+Compiler found: /usr/bin/c++
+Detecting compiler hash for triplet x64-linux-release...
+Compiler found: /usr/bin/c++
+The following packages will be built and installed:
+    antlr4:x64-linux-release@4.13.2#1 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/419f0511764db2cbdf8f8c5c3aad4f984f1c8fe5
+  * boost-algorithm:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/16fe704598a261d9766b1d6eb3a483f468ab6cac
+  * boost-array:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/6259bc62d2fa5980736b9365bb69fb242269b0e2
+  * boost-assert:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/89ff4d2e2e735c492f4f186ef5d08c27a33af0b7
+  * boost-bind:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/4779d27870e250fbe6fc8b7a05d911cacb8aae60
+  * boost-cmake:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/453705350fbd0a8dbdbbdd06e8f368baa30b131b
+  * boost-concept-check:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/e55931d7c2bc2b33a2cf49d6ced511e2e209bdd2
+  * boost-config:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/762b2f284c48416310b5d05c4028716803ec2043
+  * boost-container-hash:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/2903e8d987be9e6c2d367298452cca9900f87f8e
+  * boost-conversion:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/41fb2eb0dd4203ced5645d9e659253e642d6848c
+    boost-core:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/d978b719a8e14adce4d804ab5371e357afed9687
+  * boost-describe:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/d2a4fc640014f7442932464d954ad44b302e41c3
+  * boost-detail:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/180c83d347dfd34afc12f69f5ca7d9e75b9681bf
+  * boost-dynamic-bitset:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/51d054aab9c1c50259e253c4cc02114d661a4f4f
+  * boost-exception:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/3c99e4a65f9f64580c5601219d05dac6f54bc0ab
+  * boost-function:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/6c633bb26db4be00c4d2aaacbb36493cce90edae
+  * boost-function-types:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/13e0fd21c39949a145a90a001eb01d95c10e6cd9
+  * boost-functional:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/1a149e24ca42cbda3040781ebb9a4a634ccccfba
+  * boost-fusion:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/7fca552578f4e09ce194b1bf0d6f25bac435907b
+  * boost-headers:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/c01b4dd603c01edf1940f0df3f6498f51c8acda1
+  * boost-integer:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/944979527cd3e9b158f6d4fa27174a154b756f44
+  * boost-io:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/381228ce40062d70c8a56afaafed81710a1ff743
+    boost-iostreams[bzip2,core,lzma,zlib,zstd]:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/485177da12bf8a3c09581def8abdd87456800d39
+  * boost-iterator:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/8b9a0e755f202cc140222722f4292daf54ff582b
+  * boost-move:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/2ec65ea9d8386c7364647e10ce8eeeb809be40b9
+  * boost-mp11:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/46e636f8b4c3d8baad6af94f37838a84bf2a3ad7
+  * boost-mpl:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/42387dab4931df9bfd20d869b92d7c6855900a93
+  * boost-numeric-conversion:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/d7c5fdc151bf418c8b4c7e8df69306797ea12f63
+  * boost-optional:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/1401709a35e73abf6581ee9eab32ae2b71a7fa0f
+  * boost-predef:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/955dda784a843bfb85d7c17343666c5ccf0f8642
+  * boost-preprocessor:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/a086ddc6ee105650c442c1d40438b1670e3248b4
+  * boost-random:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/28837a21143c7896257a2714036769302199b030
+  * boost-range:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/92192fe61d14a9c421db7c3ed640e7b35f9685a4
+  * boost-regex:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/9318a93a93511ef643cf511123f7be253b27cb66
+  * boost-smart-ptr:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/a5ab980fbf31a3a2a95cadf878c42cfdf7e5449f
+  * boost-static-assert:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/47f251620a2037084eb2d8ac0e6ff3601523e42a
+  * boost-system:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/7c85bcb721e1a1cc3bd96660476a30c0eba11f8f
+    boost-test:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/fce3e32f81af52bc38b505496c6b6f018ed10f7f
+  * boost-throw-exception:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/4b282c6d95bbb3e399592f9eb87b8f420d34b3b5
+  * boost-tuple:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/b04ebfe07fa6c45bf2e0dd35a9fec10add1b6ef9
+  * boost-type-traits:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/fe39918134d7cdeec3dc248cd6075bc792039ce5
+  * boost-typeof:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/dbef6caf417e0c2ec880da9e9a6d4094a750e970
+  * boost-uninstall:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/f7397719df120125cafecc8000deb3d2a0d5c7af
+  * boost-unordered:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/3016f6768a087d2f7a5629edae86d00c67191f1f
+  * boost-utility:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/ee6600d9dea03593efcc67d0862d7d14807bd14d
+  * boost-variant2:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/da8c7998e31bf676c2efbce08f4e7cb41066dfe2
+  * boost-winapi:x64-linux-release@1.86.0 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/d75ae8aec7f6af51c19a6301a05194616da25145
+  * bzip2[core,tool]:x64-linux-release@1.0.8#6 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/2d029da682847c5ebdc54e4dbea001331a02207e
+    fmt:x64-linux-release@11.0.2#1 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/07a73a7565e5de9eb42e90c16c133bdfdfebbcda
+  * liblzma:x64-linux-release@5.6.3 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/b5e5694620b41a4d668390e5d14fa2326e0afdc3
+  * libuuid:x64-linux-release@1.0.3#14 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/09be6774f518692bc418aa03623cc9dbc19e6516
+    minizip-ng[core,zlib]:x64-linux-release@4.0.7 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/eeefed8ea3d0bded7e8333a05870153f5e4899a0
+    sirius-solver:x64-linux-release@1.8 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/21129bea4b58c1b1ee4be2035e35fa24326efe7c
+  * vcpkg-boost:x64-linux@2024-05-15 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/aca8ab6ec76d120c4482a629de23cad5ad7e4643
+  * vcpkg-cmake:x64-linux@2024-04-23 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/e74aa1e8f93278a8e71372f1fa08c3df420eb840
+  * vcpkg-cmake-config:x64-linux@2024-05-23 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/97a63e4bc1a17422ffe4eff71da53b4b561a7841
+    yaml-cpp:x64-linux-release@0.8.0#1 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/eb1a38369faa80d2af500df32ef6d4a747336dcb
+  * zlib:x64-linux-release@1.3.1 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/3f05e04b9aededb96786a911a16193cdb711f0c9
+  * zstd:x64-linux-release@1.5.6 -- /home/alzoobiali/.cache/vcpkg/registries/git-trees/796171d4d359b6786b8e1380fb6da8e677a9087b
+Additional packages (*) will be modified to complete this operation.
+Restored 59 package(s) from /home/alzoobiali/.cache/vcpkg/archives in 693 ms. Use --debug to see more details.
+Installing 1/59 vcpkg-cmake-config:x64-linux@2024-05-23...
+Elapsed time to handle vcpkg-cmake-config:x64-linux: 8.84 ms
+vcpkg-cmake-config:x64-linux package ABI: 262fcaa98ccd83ba28fb4e080836160814d29872e101b13398679088a7caed73
+Installing 2/59 vcpkg-cmake:x64-linux@2024-04-23...
+Elapsed time to handle vcpkg-cmake:x64-linux: 7.63 ms
+vcpkg-cmake:x64-linux package ABI: e10f3e79a2014ec14af3832c9cb1e191ea813cc2781015326f3f7d629e810fcd
+Installing 3/59 libuuid:x64-linux-release@1.0.3#14...
+Elapsed time to handle libuuid:x64-linux-release: 9.74 ms
+libuuid:x64-linux-release package ABI: d2dd8c672ef1faab806c730c0c8b16fcb1ef5616a5bfc7fbe908fc3e8304ecb0
+Installing 4/59 antlr4:x64-linux-release@4.13.2#1...
+Elapsed time to handle antlr4:x64-linux-release: 42.2 ms
+antlr4:x64-linux-release package ABI: d6ad28c58b988f5495ad2447e0bec42b3d686d4b40a0af9a78c1d3307985e7d8
+Installing 5/59 vcpkg-boost:x64-linux@2024-05-15...
+Elapsed time to handle vcpkg-boost:x64-linux: 4.93 ms
+vcpkg-boost:x64-linux package ABI: 9d270c899570de4691c1bca15a754ee99c2724e0c323f0337ab9c039415a2a5d
+Installing 6/59 boost-uninstall:x64-linux-release@1.86.0...
+Elapsed time to handle boost-uninstall:x64-linux-release: 8.45 ms
+boost-uninstall:x64-linux-release package ABI: 14496685457ddc00c6e8101a7a9b5c2ae65313c4b5d037d7132dbd3c6593c56c
+Installing 7/59 boost-cmake:x64-linux-release@1.86.0...
+Elapsed time to handle boost-cmake:x64-linux-release: 12.8 ms
+boost-cmake:x64-linux-release package ABI: c2ae750339894ac8ce9cf9bb4986f5c12510aac8f6f36b8f589f8e103047c7e7
+Installing 8/59 boost-headers:x64-linux-release@1.86.0...
+Elapsed time to handle boost-headers:x64-linux-release: 12.1 ms
+boost-headers:x64-linux-release package ABI: 13db1abf4f15bf8c6d99f73c5cc778521b781ae06caf4d51609ad5f916d71101
+Installing 9/59 boost-config:x64-linux-release@1.86.0...
+Elapsed time to handle boost-config:x64-linux-release: 57 ms
+boost-config:x64-linux-release package ABI: bd9e6e42d4b403ef763bac249e270334374b044cee3f4626a946debc42978c75
+Installing 10/59 boost-assert:x64-linux-release@1.86.0...
+Elapsed time to handle boost-assert:x64-linux-release: 11.5 ms
+boost-assert:x64-linux-release package ABI: 80265cc9ed33ef97c803b3231a9ee01c7252e9095f901cd80389cbc30f102c9a
+Installing 11/59 boost-throw-exception:x64-linux-release@1.86.0...
+Elapsed time to handle boost-throw-exception:x64-linux-release: 13 ms
+boost-throw-exception:x64-linux-release package ABI: 56ed5c81132e19db9ab45d746272dbf10a07328d8303ff9fc83626a4f7e5803d
+Installing 12/59 boost-static-assert:x64-linux-release@1.86.0...
+Elapsed time to handle boost-static-assert:x64-linux-release: 10.5 ms
+boost-static-assert:x64-linux-release package ABI: 7358c983e95708cc782cd31172d38df3401f5a53e5820c51ed4648b64c48e8c4
+Installing 13/59 boost-core:x64-linux-release@1.86.0...
+Elapsed time to handle boost-core:x64-linux-release: 32.9 ms
+boost-core:x64-linux-release package ABI: 0f01baa002dfd92a24f895ec1163b81956f5a54d9480d80bc2a7bc2b37c36c6c
+Installing 14/59 zstd:x64-linux-release@1.5.6...
+Elapsed time to handle zstd:x64-linux-release: 13.5 ms
+zstd:x64-linux-release package ABI: 8b2d7a436cf4aa5320a6b29f004f5f5f10fbb94305905898c091a0c1f51e37af
+Installing 15/59 zlib:x64-linux-release@1.3.1...
+Elapsed time to handle zlib:x64-linux-release: 9.46 ms
+zlib:x64-linux-release package ABI: f61fbc783ed15d19a2603fbae4d7c71923c3bf6b4862ae48c7513f5ad94a33c6
+Installing 16/59 liblzma:x64-linux-release@5.6.3...
+Elapsed time to handle liblzma:x64-linux-release: 12.9 ms
+liblzma:x64-linux-release package ABI: dd58b33d4ce3b0b6b2e33c5ba579d9bdc17be3f196876fa7820f54434b049639
+Installing 17/59 boost-type-traits:x64-linux-release@1.86.0...
+Elapsed time to handle boost-type-traits:x64-linux-release: 38.8 ms
+boost-type-traits:x64-linux-release package ABI: 82c176061ca4f9ceadb19bfbaccac608a7a247a740ac2139cceb6cd29f773e53
+Installing 18/59 boost-preprocessor:x64-linux-release@1.86.0...
+Elapsed time to handle boost-preprocessor:x64-linux-release: 83.9 ms
+boost-preprocessor:x64-linux-release package ABI: 8f4acdda9653e52c6e0842a7220a4409c676c253517ffcd53c1f45e7820a8d81
+Installing 19/59 boost-io:x64-linux-release@1.86.0...
+Elapsed time to handle boost-io:x64-linux-release: 7.45 ms
+boost-io:x64-linux-release package ABI: 666305d28a718d4a5da276e5c4ebeb179bb121a9478e9bf4eaa6e4b27eb06de5
+Installing 20/59 boost-utility:x64-linux-release@1.86.0...
+Elapsed time to handle boost-utility:x64-linux-release: 10.9 ms
+boost-utility:x64-linux-release package ABI: 2290c80f598ab09071d919a936ceb3337cf0dfd6be8012b0c9ae1d0f53ab8711
+Installing 21/59 boost-move:x64-linux-release@1.86.0...
+Elapsed time to handle boost-move:x64-linux-release: 14.6 ms
+boost-move:x64-linux-release package ABI: 7a21bff485e9d9668870efa7e3e77f0cbcb7f8a637e50217d26e4e3d91de995d
+Installing 22/59 boost-smart-ptr:x64-linux-release@1.86.0...
+Elapsed time to handle boost-smart-ptr:x64-linux-release: 23.1 ms
+boost-smart-ptr:x64-linux-release package ABI: 4beb029a3d5b524fd2cc5a2e12a601e5c0bd39a171941a9a63169d4252b3c5ae
+Installing 23/59 boost-predef:x64-linux-release@1.86.0...
+Elapsed time to handle boost-predef:x64-linux-release: 34.5 ms
+boost-predef:x64-linux-release package ABI: a26b3597165d139c9faf223490a383ec32b1d07dad1c3bf85d1ea9fda437b6c0
+Installing 24/59 boost-mpl:x64-linux-release@1.86.0...
+Elapsed time to handle boost-mpl:x64-linux-release: 167 ms
+boost-mpl:x64-linux-release package ABI: ad95aaadd9894c23506e01379ec951cbd9aaa1423e009ffce36f4303bddfd9cf
+Installing 25/59 boost-integer:x64-linux-release@1.86.0...
+Elapsed time to handle boost-integer:x64-linux-release: 10.1 ms
+boost-integer:x64-linux-release package ABI: 5224c92060c956e5f4fdb4c40b49ff6244e00447c399a8987d4cf4aff06338ed
+Installing 26/59 boost-mp11:x64-linux-release@1.86.0...
+Elapsed time to handle boost-mp11:x64-linux-release: 12.7 ms
+boost-mp11:x64-linux-release package ABI: f59eb1cfcfd20e791431218f3ff0cc078b16006a4e47b78ba64c989f37655d84
+Installing 27/59 boost-describe:x64-linux-release@1.86.0...
+Elapsed time to handle boost-describe:x64-linux-release: 10.8 ms
+boost-describe:x64-linux-release package ABI: d093c987b18673f6020ac3b64406454cf52829e5d6b41225ee4ef448fa84335c
+Installing 28/59 boost-container-hash:x64-linux-release@1.86.0...
+Elapsed time to handle boost-container-hash:x64-linux-release: 11.8 ms
+boost-container-hash:x64-linux-release package ABI: bc18e2f158eeaad3eb163b63c51fe1b4bc78eadae95efab2838e12257c399d17
+Installing 29/59 boost-concept-check:x64-linux-release@1.86.0...
+Elapsed time to handle boost-concept-check:x64-linux-release: 11 ms
+boost-concept-check:x64-linux-release package ABI: 37d7100512372305f5cec4239dc8648a6e08142fa6e5e34d526ad176b1947a53
+Installing 30/59 boost-regex:x64-linux-release@1.86.0...
+Elapsed time to handle boost-regex:x64-linux-release: 25.1 ms
+boost-regex:x64-linux-release package ABI: 2eaaa65e156efb0dea19e5312fec49b3c5662a79ef666d9be69d76f31e8f3d2b
+Installing 31/59 boost-tuple:x64-linux-release@1.86.0...
+Elapsed time to handle boost-tuple:x64-linux-release: 9.31 ms
+boost-tuple:x64-linux-release package ABI: 8647c11e181bd1a91c19bb7223c3837f4c0e1dcec9d1c87e9df48185624d02fa
+Installing 32/59 boost-detail:x64-linux-release@1.86.0...
+Elapsed time to handle boost-detail:x64-linux-release: 11.6 ms
+boost-detail:x64-linux-release package ABI: 605fd166cc673536e6c74d6bfc51e78540b0d21d4c4e5433d3a4d337e789bd46
+Installing 33/59 boost-optional:x64-linux-release@1.86.0...
+Elapsed time to handle boost-optional:x64-linux-release: 11.2 ms
+boost-optional:x64-linux-release package ABI: 5c29e8ca7847c81457dd41e65e3f732d2f27d0cc2865203c00bf32f51fb6a038
+Installing 34/59 boost-typeof:x64-linux-release@1.86.0...
+Elapsed time to handle boost-typeof:x64-linux-release: 12.4 ms
+boost-typeof:x64-linux-release package ABI: 689aab497646136cf11d45d47c895002136995c3da09e450bf528f99517c6728
+Installing 35/59 boost-function-types:x64-linux-release@1.86.0...
+Elapsed time to handle boost-function-types:x64-linux-release: 23.6 ms
+boost-function-types:x64-linux-release package ABI: e454518b697f4579abd70c0d0daf7db12c7c1e1ba1826884c4dbfc41f76d9075
+Installing 36/59 boost-bind:x64-linux-release@1.86.0...
+Elapsed time to handle boost-bind:x64-linux-release: 11.2 ms
+boost-bind:x64-linux-release package ABI: 0204eafba02e239784ae470c5bb0ba0b77be8cb4cac9deae8bb0a67904fc94b4
+Installing 37/59 boost-function:x64-linux-release@1.86.0...
+Elapsed time to handle boost-function:x64-linux-release: 11.1 ms
+boost-function:x64-linux-release package ABI: 0701e5cd4fa7bb19acc16eb1c665f7979e58e56351bbfed058ba2020fe2f90e2
+Installing 38/59 boost-functional:x64-linux-release@1.86.0...
+Elapsed time to handle boost-functional:x64-linux-release: 10.7 ms
+boost-functional:x64-linux-release package ABI: 6c27cfad2755686c1e9769f6c6c0560b40fffd6e28db6bbc9a83b83d08a421eb
+Installing 39/59 boost-fusion:x64-linux-release@1.86.0...
+Elapsed time to handle boost-fusion:x64-linux-release: 192 ms
+boost-fusion:x64-linux-release package ABI: 047c817dd0341b95cf257bd80679d9a5f7a57637f3aa06eaf05af8405e202066
+Installing 40/59 boost-iterator:x64-linux-release@1.86.0...
+Elapsed time to handle boost-iterator:x64-linux-release: 15.4 ms
+boost-iterator:x64-linux-release package ABI: ee4d040fd884959623aa3c4906ac4754347fcc220d9e9d87496818b2f0eee3c8
+Installing 41/59 boost-conversion:x64-linux-release@1.86.0...
+Elapsed time to handle boost-conversion:x64-linux-release: 9.36 ms
+boost-conversion:x64-linux-release package ABI: 8fa003935f555c30ea233bcc57073135a5cb75acce6d230cb0ca4fcc050b4cab
+Installing 42/59 boost-array:x64-linux-release@1.86.0...
+Elapsed time to handle boost-array:x64-linux-release: 9.13 ms
+boost-array:x64-linux-release package ABI: b32eeb34e5f07176e16b96779669ecdb9d3b591a3dfb2a55460307712c4316c1
+Installing 43/59 boost-range:x64-linux-release@1.86.0...
+Elapsed time to handle boost-range:x64-linux-release: 33.2 ms
+boost-range:x64-linux-release package ABI: 7c9eff1c7ef9f07fea2e646928427e35c608e2db44be5c679d1021d8b08659a6
+Installing 44/59 boost-winapi:x64-linux-release@1.86.0...
+Elapsed time to handle boost-winapi:x64-linux-release: 28.2 ms
+boost-winapi:x64-linux-release package ABI: 926c9add9ebf353e303f294b6af381b701b12fab633f088016c58765c81fbd3d
+Installing 45/59 boost-variant2:x64-linux-release@1.86.0...
+Elapsed time to handle boost-variant2:x64-linux-release: 10.2 ms
+boost-variant2:x64-linux-release package ABI: d2b7c1ec612ab1ac84bcd527fe24a0377ec366484ef950f1a96b37d219b426d2
+Installing 46/59 boost-system:x64-linux-release@1.86.0...
+Elapsed time to handle boost-system:x64-linux-release: 16.4 ms
+boost-system:x64-linux-release package ABI: de6957642cc151708dfcc4a87044d7b8f47bc4b1a63386f0d6d7737bd48c3bc1
+Installing 47/59 boost-dynamic-bitset:x64-linux-release@1.86.0...
+Elapsed time to handle boost-dynamic-bitset:x64-linux-release: 11.2 ms
+boost-dynamic-bitset:x64-linux-release package ABI: 726553320591117624b33c2c0f2f0bc3efa70930f4097d2780eefb9cf49ad6b2
+Installing 48/59 boost-random:x64-linux-release@1.86.0...
+Elapsed time to handle boost-random:x64-linux-release: 22.1 ms
+boost-random:x64-linux-release package ABI: 942092242e2ce1f9a193a0fd2dc82b235fa49246454f99ed46257485179102eb
+Installing 49/59 boost-numeric-conversion:x64-linux-release@1.86.0...
+Elapsed time to handle boost-numeric-conversion:x64-linux-release: 14.6 ms
+boost-numeric-conversion:x64-linux-release package ABI: 57c0a2c3761dd7ee21966287191b44bfb23042063c45b20ba14cc16fbdcd7bf1
+Installing 50/59 bzip2[core,tool]:x64-linux-release@1.0.8#6...
+Elapsed time to handle bzip2:x64-linux-release: 10.9 ms
+bzip2:x64-linux-release package ABI: 66203d22168284b3002b6c32f6f44dc9db7e1f9b38bd0de269c482ce569ab2f7
+Installing 51/59 boost-iostreams[bzip2,core,lzma,zlib,zstd]:x64-linux-release@1.86.0...
+Elapsed time to handle boost-iostreams:x64-linux-release: 34.9 ms
+boost-iostreams:x64-linux-release package ABI: d21569311930f9276218cd4ef46fc47395590d2a1969105d3f6c839be1557734
+Installing 52/59 boost-exception:x64-linux-release@1.86.0...
+Elapsed time to handle boost-exception:x64-linux-release: 14.8 ms
+boost-exception:x64-linux-release package ABI: da959bae9d8e2769d43e2d4743c715a05df80667419d6938a6840bca66b26b9d
+Installing 53/59 boost-unordered:x64-linux-release@1.86.0...
+Elapsed time to handle boost-unordered:x64-linux-release: 19.6 ms
+boost-unordered:x64-linux-release package ABI: 498da9925440019fb358fdb34e0e7cb91829c2924ec95842e8432df2a0f9b6c6
+Installing 54/59 boost-algorithm:x64-linux-release@1.86.0...
+Elapsed time to handle boost-algorithm:x64-linux-release: 25.5 ms
+boost-algorithm:x64-linux-release package ABI: f4c13b79b725598bfaff528ccbfa235558a3f45e5a7dc57dc5dbe1361d1cd2b0
+Installing 55/59 boost-test:x64-linux-release@1.86.0...
+Elapsed time to handle boost-test:x64-linux-release: 41.3 ms
+boost-test:x64-linux-release package ABI: d8e14468a53d060ebe4b6d6dfdebfe89df3e34e46a560b5cb912ff425c81d26d
+Installing 56/59 fmt:x64-linux-release@11.0.2#1...
+Elapsed time to handle fmt:x64-linux-release: 12.9 ms
+fmt:x64-linux-release package ABI: 3c788656f6c26c622c8f8206f6dc55e4ada853f1842f44a4b32786c9174f6d83
+Installing 57/59 minizip-ng[core,zlib]:x64-linux-release@4.0.7...
+Elapsed time to handle minizip-ng:x64-linux-release: 15 ms
+minizip-ng:x64-linux-release package ABI: db086710ad2e30886f611e66f1c526e16f68a24e56796eb591c80205b43ee129
+Installing 58/59 sirius-solver:x64-linux-release@1.8...
+Elapsed time to handle sirius-solver:x64-linux-release: 17.2 ms
+sirius-solver:x64-linux-release package ABI: 2a343f6e4b68da4968dcdde5e8d7d423b355ae81f207d388c3da5f66b2789f6e
+Installing 59/59 yaml-cpp:x64-linux-release@0.8.0#1...
+Elapsed time to handle yaml-cpp:x64-linux-release: 18.6 ms
+yaml-cpp:x64-linux-release package ABI: 4a6ec8b600f6193c6a6334688eef54489239029936fca4626f937d2b6c38ecb2
+Total install time: 1.4 s
+antlr4 provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(antlr4-runtime CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE antlr4_static)
+
+boost-core provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(boost_core CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE Boost::core)
+
+boost-iostreams provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(boost_iostreams CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE Boost::iostreams)
+
+boost-test provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(boost_included_prg_exec_monitor CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE Boost::included_prg_exec_monitor)
+
+  find_package(boost_included_test_exec_monitor CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE Boost::included_test_exec_monitor)
+
+  find_package(boost_included_unit_test_framework CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE Boost::included_unit_test_framework)
+
+  find_package(boost_prg_exec_monitor CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE Boost::prg_exec_monitor)
+
+  find_package(boost_test_exec_monitor CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE Boost::test_exec_monitor)
+
+  find_package(boost_unit_test_framework CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE Boost::unit_test_framework)
+
+The package fmt provides CMake targets:
+
+    find_package(fmt CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE fmt::fmt)
+
+    # Or use the header-only version
+    find_package(fmt CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE fmt::fmt-header-only)
+
+minizip-ng provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(minizip-ng CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE MINIZIP::minizip-ng)
+
+minizip-ng provides pkg-config modules:
+
+  # Zip manipulation library
+  minizip-ng
+
+sirius-solver provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(sirius_solver CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE sirius_solver)
+
+yaml-cpp provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(yaml-cpp CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE yaml-cpp::yaml-cpp)
+
+yaml-cpp provides pkg-config modules:
+
+  # A YAML parser and emitter for C++
+  yaml-cpp
+

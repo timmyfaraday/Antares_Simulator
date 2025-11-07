@@ -21,6 +21,8 @@
 
 #define BOOST_TEST_MODULE testE2EModeler
 #include <fmt/format.h>
+#include <span>
+
 
 #include <boost/test/unit_test.hpp>
 
