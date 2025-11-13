@@ -350,6 +350,7 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
         hourlyCsrProblem.run(week, year);
     }
 
+
     // for (uint hour = 0; hour < 1; hour++){
     //     auto f = problemeHebdo_->ValeursDeNTC[hour].ValeurDuFlux;
     //     // auto f = problemeHebdo_->ValeursDeNTC[hourInWeek].ValeurDuFlux[Interco];
@@ -427,38 +428,36 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
 
         problemeHebdo_->CorrespondanceVarNativesVarOptim = backup;
 
-        // try Ali here brute: 
-        int var;
-        double oldValue;
-        for (uint h = 0; h < nbHoursInWeek; ++h)
-        {
-            for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
-            {
-                    // logs.info() << "[adq-patch] Affected Area loop I "<<area;
-                var = problemeHebdo_->CorrespondanceVarNativesVarOptim[h]
-                        .NumeroDeVariableDefaillancePositive[area];
-                oldValue = ENSAfter[area][h];
-                Xmax[var] = oldValue; // adjust to force zero if ens is already null
-                Xmin[var] = 0;
-                X[var] = oldValue;
-                TypeVar[var] = VARIABLE_BORNEE_DES_DEUX_COTES;
-            
-            }
-        }
-
-
-
-
-        // // nonAffected Areas dispatch has to be fixed, we do this by fixing their ENS to the old one
-        // // modif1
+        // // try Ali here brute: 
         // int var;
         // double oldValue;
         // for (uint h = 0; h < nbHoursInWeek; ++h)
         // {
         //     for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
         //     {
-        //         if (area == 7)
-        //             logs.info() <<"Germany is here ";
+        //             // logs.info() << "[adq-patch] Affected Area loop I "<<area;
+        //         var = problemeHebdo_->CorrespondanceVarNativesVarOptim[h]
+        //                 .NumeroDeVariableDefaillancePositive[area];
+        //         oldValue = ENSAfter[area][h];
+        //         Xmax[var] = oldValue; // adjust to force zero if ens is already null
+        //         Xmin[var] = 0;
+        //         X[var] = oldValue;
+        //         TypeVar[var] = VARIABLE_BORNEE_DES_DEUX_COTES;
+            
+        //     }
+        // }
+
+
+
+
+        // nonAffected Areas dispatch has to be fixed, we do this by fixing their ENS to the old one
+        // modif1
+        // int var;
+        // double oldValue;
+        // for (uint h = 0; h < nbHoursInWeek; ++h)
+        // {
+        //     for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
+        //     {
         //         if (!affectedAreas.contains(area))
         //         {
         //             // logs.info() << "[adq-patch] Affected Area loop I "<<area;
@@ -483,12 +482,8 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
         // {
         //     for (uint32_t area = 0; area < problemeHebdo_->NombreDePays; ++area)
         //     {
-        //         if (area == 7)
-        //             logs.info() <<"Germany is here II";
         //         if (affectedAreas.contains(area))
         //         {
-        //             // logs.info() << "[adq-patch] Affected Area loop II "<<area;
-
         //             // compute Balance of area:
         //             bilanPays = 0;
         //             // Export, négative
@@ -550,8 +545,8 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
         //                 var = problemeHebdo_->CorrespondanceVarNativesVarOptim[h]
         //                         .NumeroDeVariableDefaillancePositive[area];
         //                 oldValue = ENSAfter[area][h];
+        //                 // Xmax[var] = oldValue; // may be zero ?
         //                 Xmax[var] = oldValue; // may be zero ?
-        //                 // Xmax[var] = 0.; // may be zero ?
         //                 Xmin[var] = 0.;
         //                 X[var] = oldValue;
         //                 TypeVar[var] = VARIABLE_BORNEE_DES_DEUX_COTES;
@@ -560,33 +555,39 @@ void CurtailmentSharingPostProcessCmd::execute(const optRuntimeData& opt_runtime
         //     }
         // }
 
-        // // FIXING THE FLOW
-        // // the flow is fixed for every connection
-        // // modif3 
-        // for (uint hourInWeek = 0; hourInWeek < nbHoursInWeek;
-        //      ++hourInWeek) // hourInWeek: hoursRequiringCurtailmentSharing)
-        // {
-        //     for (uint32_t Interco = 0; Interco < problemeHebdo_->NombreDInterconnexions; ++Interco)
-        //     {
-        //         int origin = problemeHebdo_->PaysOrigineDeLInterconnexion[Interco];
-        //         int extrem = problemeHebdo_->PaysExtremiteDeLInterconnexion[Interco];
-        //         if (problemeHebdo_->adequacyPatchRuntimeData->areaMode[origin] == physicalAreaInsideAdqPatch
-        //              && problemeHebdo_->adequacyPatchRuntimeData->areaMode[extrem] == physicalAreaInsideAdqPatch)
-        //         {
-        //             int var = variableManager.NTCDirect(Interco, hourInWeek);
-        //             // if (TypeVar[var] == VARIABLE_BORNEE_DES_DEUX_COTES){    
-        //                 auto f = problemeHebdo_->ValeursDeNTC[hourInWeek].ValeurDuFlux[Interco];
-        //                 logs.info() <<origin<<" "<<problemeHebdo_->NomsDesPays[origin]<<" "<<extrem<<" "<<problemeHebdo_->NomsDesPays[extrem]<<" f : "<< f<<" type "<<TypeVar[var];
-        //                 Xmax[var] = f;// + 0.01 ;// + 10;
-        //                 Xmin[var] = f;// - 0.01;//- 10;
-        //                 X[var] = f;
-        //             // }
-        //             TypeVar[var] = VARIABLE_BORNEE_DES_DEUX_COTES;
-        //             // TypeVar[var] = VARIABLE_FIXE; // Variable fixe
+        // FIXING THE FLOW
+        // the flow is fixed for every connection
+        // modif3 
+
+        for (uint hourInWeek = 0; hourInWeek < nbHoursInWeek;
+             ++hourInWeek) // hourInWeek: hoursRequiringCurtailmentSharing)
+        {
+            for (uint32_t Interco = 0; Interco < problemeHebdo_->NombreDInterconnexions; ++Interco)
+            {
+                int origin = problemeHebdo_->PaysOrigineDeLInterconnexion[Interco];
+                int extrem = problemeHebdo_->PaysExtremiteDeLInterconnexion[Interco];
+
+                if (problemeHebdo_->adequacyPatchRuntimeData->areaMode[origin] == physicalAreaInsideAdqPatch
+                     && problemeHebdo_->adequacyPatchRuntimeData->areaMode[extrem] == physicalAreaInsideAdqPatch)
+                {
+                    int var = variableManager.NTCDirect(Interco, hourInWeek);
+                        // if (TypeVar[var] == VARIABLE_BORNEE_DES_DEUX_COTES){    
+                    auto f = problemeHebdo_->ValeursDeNTC[hourInWeek].ValeurDuFlux[Interco];
+                    if (origin == 44 || extrem == 44) // node zz_flowbased
+                        if (41<=hourInWeek and hourInWeek <=43)
+                            logs.info() <<origin<<" "<<problemeHebdo_->NomsDesPays[origin]<<" "<<extrem<<" "<<problemeHebdo_->NomsDesPays[extrem]<<" f "<<f<<" :  type "<<TypeVar[var] <<" xmin: "<<Xmin[var]<<"  xmax: "<<Xmax[var];
+
+                    // Xmax[var] = f + 1;// + 0.01 ;// + 10;
+                    Xmin[var] = f - 1;// - 0.01;//- 10;
+                    // X[var] = f;
+                        // }
+                    TypeVar[var] = VARIABLE_BORNEE_DES_DEUX_COTES;
+                }
+                    // TypeVar[var] = VARIABLE_FIXE; // Variable fixe
                     
-        //         }
-        //     }
-        // }
+                // }
+            }
+        }
 
         // NEW 
         // Redispatch, calling the solver
