@@ -247,6 +247,10 @@ else ()
     endif ()
 endif ()
 
+# Include runtime-libs helper to collect runtime DLLs and expose
+# SYSTEM_RUNTIME_LIBS and SYSTEM_RUNTIME_LIBS_STR to packaging templates.
+include(cmake/runtime-libs.cmake)
+
 # TODO : review Standard Settings
 include(cmake/common-settings.cmake)
 
