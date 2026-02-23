@@ -142,6 +142,65 @@ jobs:
       run: |
         cmake --build _build --config Release -j$(nproc)
 
+    - name: Analyze Windows binaries for bz2 imports
+      shell: pwsh
+      run: |
+        $out = "bz2-deps.txt"
+        if (Test-Path $out) { Remove-Item $out -Force }
+        Write-Output "Detecting dumpbin via vswhere or PATH..." | Out-File $out -Encoding utf8
+        $vswherePath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+        $dumpbin = $null
+        if (Test-Path $vswherePath) {
+            $inst = & $vswherePath -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null
+            if ($inst) {
+                $vcTools = Join-Path $inst "VC\Tools\MSVC"
+                if (Test-Path $vcTools) {
+                    $msvc = Get-ChildItem $vcTools | Sort-Object Name -Descending | Select-Object -First 1
+                    if ($msvc) { $candidate = Join-Path $msvc.FullName "bin\Hostx64\x64\dumpbin.exe"; if (Test-Path $candidate) { $dumpbin = $candidate } }
+                }
+            }
+        }
+        if (-not $dumpbin) {
+            $cmd = Get-Command dumpbin.exe -ErrorAction SilentlyContinue
+            if ($cmd) { $dumpbin = $cmd.Path }
+        }
+        Write-Output "dumpbin: $dumpbin" | Out-File $out -Append -Encoding utf8
+
+        $files = @()
+        if (Test-Path "_build") { $files = Get-ChildItem -Path _build -Recurse -Include *.exe,*.dll -File -ErrorAction SilentlyContinue }
+        if ($files.Count -eq 0) { Write-Output "No PE files found under _build" | Out-File $out -Append -Encoding utf8 }
+        foreach ($f in $files) {
+            Write-Output "=== $($f.FullName) ===" | Out-File $out -Append -Encoding utf8
+            if ($dumpbin -and (Test-Path $dumpbin)) {
+                try {
+                    & "$dumpbin" /IMPORTS "$($f.FullName)" 2>$null | Select-String -Pattern 'bz2' -SimpleMatch | Out-File $out -Append -Encoding utf8
+                } catch {
+                    Write-Output "dumpbin failed on $($f.FullName): $_" | Out-File $out -Append -Encoding utf8
+                }
+            } else {
+                # fallback: search printable strings for bz2
+                try {
+                    $matches = Select-String -Path $f.FullName -Pattern 'bz2' -SimpleMatch -Quiet -ErrorAction SilentlyContinue
+                    if ($matches) {
+                        Write-Output "strings match for bz2 in $($f.FullName)" | Out-File $out -Append -Encoding utf8
+                        Select-String -Path $f.FullName -Pattern 'bz2' -SimpleMatch | Out-File $out -Append -Encoding utf8
+                    } else {
+                        Write-Output "no match" | Out-File $out -Append -Encoding utf8
+                    }
+                } catch {
+                    Write-Output "strings fallback failed: $_" | Out-File $out -Append -Encoding utf8
+                }
+            }
+            Write-Output "" | Out-File $out -Append -Encoding utf8
+        }
+        Write-Host "Analysis written to $out"
+
+    - name: Upload bz2 dependency scan
+      uses: actions/upload-artifact@v6
+      with:
+        name: bz2-deps
+        path: bz2-deps.txt
+
     - name: .zip creation
       if: ${{ success() }}
       shell: bash
