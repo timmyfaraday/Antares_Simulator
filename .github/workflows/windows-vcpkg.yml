@@ -95,16 +95,6 @@ jobs:
       run: |
         git submodule update --init vcpkg && ./vcpkg/bootstrap-vcpkg.bat -disableMetrics
 
-    - name: Ensure bzip2 is installed in vcpkg
-      shell: bash
-      run: |
-        echo "Installing bzip2 for triplet: ${GITHUB_WORKSPACE} ${triplet}"
-        set -e
-        ./vcpkg/vcpkg.exe install bzip2:${{ env.triplet }} || {
-          echo "Fallback: installing bzip2:x64-windows"
-          ./vcpkg/vcpkg.exe install bzip2:x64-windows || true
-        }
-
     - name: Restore vcpkg binary dir from cache
       id: cache-vcpkg-binary
       uses: actions/cache/restore@v5
@@ -211,91 +201,13 @@ jobs:
         name: bz2-deps
         path: bz2-deps.txt
 
-    - name: Install into staging tree
-      if: ${{ success() }}
-      shell: bash
-      run: |
-        echo "Running cmake --install to populate _build/install"
-        cmake --install _build --config Release
-
-    - name: Populate staging from vcpkg installed bins (fallback)
-      if: ${{ success() }}
-      shell: bash
-      run: |
-        set -euo pipefail
-        mkdir -p _build/install/bin
-        echo "Copying DLLs from possible vcpkg installed dirs to _build/install/bin (robust find)"
-        # Copy any DLLs from build-local vcpkg_installed
-        if [ -d "_build/vcpkg_installed" ]; then
-          echo "Found _build/vcpkg_installed; copying DLLs"
-          find _build/vcpkg_installed -type f -iname '*.dll' -exec cp -u -- '{}' _build/install/bin/ \; || true
-        fi
-        # Copy from checked-out vcpkg submodule installed
-        if [ -d "vcpkg/installed" ]; then
-          echo "Found repo vcpkg/installed; copying DLLs"
-          find vcpkg/installed -type f -iname '*.dll' -exec cp -u -- '{}' _build/install/bin/ \; || true
-        fi
-        # Copy any bz2.dll or other DLLs produced in build tree (per-component Release dirs)
-        echo "Searching build tree for bz2.dll and other DLLs"
-        find _build -type f -iname 'bz2.dll' -exec cp -u -- '{}' _build/install/bin/ \; || true
-        # Also copy any other DLLs under _build/**/Release that might be required
-        find _build -type f -path '*/Release/*.dll' -exec cp -u -- '{}' _build/install/bin/ \; || true
-        echo "Staging bin contents after copy:"
-        ls -la _build/install/bin || true
-
-    - name: Verify staging contains bz2.dll
-      if: ${{ success() }}
-      shell: bash
-      run: |
-        echo "Verifying _build/install/bin contains bz2.dll"
-        if [ -f _build/install/bin/bz2.dll ]; then
-          echo "FOUND: _build/install/bin/bz2.dll"
-        else
-          echo "MISSING: _build/install/bin/bz2.dll"
-          echo "Listing _build/install/bin for debugging:" || true
-          ls -la _build/install/bin || true
-          echo "Listing vcpkg_installed bins for debugging:" || true
-          ls -la _build/vcpkg_installed || true
-          echo "Listing vcpkg/installed bins for debugging:" || true
-          ls -la vcpkg/installed || true
-          # print bz2-deps content if exists
-          if [ -f bz2-deps.txt ]; then
-            echo "--- bz2-deps.txt ---"
-            sed -n '1,200p' bz2-deps.txt || true
-          fi
-          # fail to avoid packaging incomplete artifact
-          exit 1
-        fi
-
     - name: .zip creation
       if: ${{ success() }}
       shell: bash
       run: |
-        set -euo pipefail
         cd _build
-        echo "Contents of _build/install/bin for debugging:"
-        ls -la install/bin || true
-        # detect any vcpkg_installed bin directories and append them to CPACK_INSTALLED_DIRECTORIES
-        EXTRA_DIRS=""
-        for d in vcpkg_installed/*/bin; do
-          if [ -d "$d" ]; then
-            echo "Found vcpkg_installed bin: $d"
-            EXTRA_DIRS="$EXTRA_DIRS;$(pwd)/$d"
-          fi
-        done
-        # also include top-level vcpkg installed if present (checked-out submodule)
-        if [ -d "../vcpkg/installed" ]; then
-          for d in ../vcpkg/installed/*/bin; do
-            if [ -d "$d" ]; then
-              echo "Found repo vcpkg installed bin: $d"
-              EXTRA_DIRS="$EXTRA_DIRS;$(pwd)/$d"
-            fi
-          done
-        fi
-        CPACK_INSTALLED_DIRS="$(pwd)/install/bin;$(pwd)/bin${EXTRA_DIRS}"
-        echo "Using CPACK_INSTALLED_DIRECTORIES=$CPACK_INSTALLED_DIRS"
-        FIXED_PATH=${ORTOOLS_DIR//\\/\\\\}
-        cpack -G ZIP -D CPACK_INSTALLED_DIRECTORIES="$CPACK_INSTALLED_DIRS"
+        FIXED_PATH=${ORTOOLS_DIR//\\//}
+        cpack -G ZIP -D CPACK_INSTALLED_DIRECTORIES="${FIXED_PATH}/install/bin;bin"
         export ZIP_ARCHIVE_NAME=$(ls -1 *.zip)
         echo "ZIP_ARCHIVE_NAME=$ZIP_ARCHIVE_NAME" >> $GITHUB_ENV
 
