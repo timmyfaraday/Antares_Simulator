@@ -55,9 +55,6 @@ set(YUNI_MODULE_DEVICES                   false)
 set(YUNI_MODULE_DBI                       false)
 	set(YUNI_MODULE_DBI_SQLITE            false)
 
-# Media
-set(YUNI_MODULE_MEDIA                     false)
-
 # Network
 set(YUNI_MODULE_NET                       false)
 
@@ -156,7 +153,6 @@ if (MODULES)
 			#set(YUNI_MODULE_VFS true)
 			set(YUNI_MODULE_DEVICES true)
 			set(YUNI_MODULE_VM true)
-			set(YUNI_MODULE_MEDIA true)
 			set(YUNI_MODULE_NET true)
 			set(YUNI_MODULE_MESSAGING true)
 			set(YUNI_MODULE_GRAPHICS true)
@@ -341,18 +337,6 @@ if (MODULES)
 			set(YUNI_MODULE_NET false)
 			set(KeywordIsKnown true)
 		endif()
-
-		# media
-		if ("${it}" STREQUAL "media")
-			set(KeywordIsKnown true)
-			set(YUNI_MODULE_MEDIA true)
-		endif()
-		# -media
-		if ("${it}" STREQUAL "-media")
-			set(KeywordIsKnown true)
-			set(YUNI_MODULE_MEDIA false)
-		endif()
-
 
 		# Tests
 		if ("${it}" STREQUAL "tests")
@@ -564,10 +548,6 @@ endif()
 
 if (YUNI_MODULE_LDO)
 	list(APPEND YUNI_MODULE_AVAILABLE ldo)
-endif()
-
-if (YUNI_MODULE_MEDIA)
-	list(APPEND YUNI_MODULE_AVAILABLE media)
 endif()
 
 if (YUNI_MODULE_GRAPHICS)
