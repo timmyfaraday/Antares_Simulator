@@ -68,9 +68,6 @@ set(YUNI_MODULE_LDO                       false)
 set(YUNI_MODULE_GRAPHICS                  false)
 set(YUNI_MODULE_OPENGL                    false)
 
-# UI (User Interface)
-set(YUNI_MODULE_UI                        false)
-
 # Algorithms
 set(YUNI_MODULE_ALGORITHMS                false)
 
@@ -371,17 +368,6 @@ if (MODULES)
 			set(YUNI_MODULE_OPENGL false)
 		endif()
 
-		# ui (User Interface)
-		if ("${it}" STREQUAL "ui")
-			set(KeywordIsKnown true)
-			set(YUNI_MODULE_UI true)
-		endif()
-		# -ui
-		if ("${it}" STREQUAL "-ui")
-			set(KeywordIsKnown true)
-			set(YUNI_MODULE_UI false)
-		endif()
-
 		# uuid
 		if ("${it}" STREQUAL "uuid")
 			set(KeywordIsKnown true)
@@ -555,10 +541,6 @@ if (YUNI_MODULE_GRAPHICS)
 	if (YUNI_MODULE_OPENGL)
 		list(APPEND YUNI_MODULE_AVAILABLE opengl)
 	endif()
-endif()
-
-if (YUNI_MODULE_UI)
-	list(APPEND YUNI_MODULE_AVAILABLE ui)
 endif()
 
 if (YUNI_MODULE_DOCUMENTATION)
