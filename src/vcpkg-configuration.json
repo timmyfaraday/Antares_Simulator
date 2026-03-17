@@ -11,9 +11,12 @@
     {
       "kind": "git",
       "repository": "https://github.com/AntaresSimulatorTeam/antares-vcpkg-registry",
-      "baseline": "6c324ae538979f4e79eb692466ad092ab48bd8fc",
+      "reference": "feature/ortoolrte",
+      "baseline": "a5009d393cc9a6060f02d2a7a5efcb4cd8cf6de1",
       "packages": [
-        "sirius-solver"
+        "sirius-solver",
+        "or-tools-rte",
+        "scip"
       ]
     }
   ]
