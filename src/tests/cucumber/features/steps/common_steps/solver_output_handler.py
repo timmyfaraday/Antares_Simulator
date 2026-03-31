@@ -169,3 +169,9 @@ class solver_output_handler:
         if path.is_file():
             return str(path)
         return None
+
+    def get_digest_content(self):
+        path = Path(self.study_output_path) / "digest.txt"
+        if path.exists():
+            return path.read_text()
+        return None

@@ -662,3 +662,31 @@ def check_max_generation_from_capacity_constraint(context, expression, rhs, clus
                     else:
                         raise ValueError(
                             f"{var_name} should not have coefficient in MaxGenerationFromCapacity::area<{area}>::ThermalCluster<{cluster}>::hour<{hour}>")
+
+
+@then("the digest matches the reference")
+def check_digest_matches_reference(context):
+    generated_digest = context.soh.get_digest_content()
+    assert generated_digest is not None, "digest.txt not found in simulation output"
+
+    study_path = context.study_path
+    ref_digest_path = study_path / "output" / "ref_digest.txt"
+    assert ref_digest_path.exists(), f"Reference digest not found at {ref_digest_path}"
+
+    ref_digest = ref_digest_path.read_text()
+
+    if generated_digest != ref_digest:
+        generated_lines = generated_digest.splitlines()
+        ref_lines = ref_digest.splitlines()
+        max_lines = max(len(generated_lines), len(ref_lines))
+        differences = []
+        for i in range(max_lines):
+            gen_line = generated_lines[i] if i < len(generated_lines) else "<missing>"
+            ref_line = ref_lines[i] if i < len(ref_lines) else "<missing>"
+            if gen_line != ref_line:
+                differences.append(f"Line {i + 1}:\n  Generated: {gen_line}\n  Reference: {ref_line}")
+
+        diff_msg = "\n".join(differences[:10])
+        if len(differences) > 10:
+            diff_msg += f"\n... and {len(differences) - 10} more differences"
+        raise AssertionError(f"Digest does not match reference:\n{diff_msg}")
